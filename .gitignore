@@ -216,3 +216,24 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ── Dell AI Parts Inspector — Project-specific ────────────────────────────────
+
+# Uploaded inspection images (user data — never commit)
+backend/uploads/
+
+# SQLite database (auto-created at runtime)
+backend/*.db
+*.db
+
+# Frontend build output and dependencies
+frontend/node_modules/
+frontend/dist/
+
+# PaddleOCR model cache
+.paddlex/
+
+# Test artifacts
+/tmp/*.jpg
+/tmp/*.pdf
+
