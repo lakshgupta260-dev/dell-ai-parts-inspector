@@ -49,7 +49,7 @@ router = APIRouter(prefix="/api/v1/ocr", tags=["OCR"])
         500: {"model": ErrorResponse, "description": "Unexpected server error."},
     },
 )
-async def extract_inspection_text(
+def extract_inspection_text(
     inspection_id: str = Path(
         ...,
         description="UUID of the inspection session returned by the Upload endpoint.",

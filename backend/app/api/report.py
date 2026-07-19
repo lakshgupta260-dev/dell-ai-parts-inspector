@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/v1/report", tags=["Report"])
     summary="Generate PDF inspection report",
     description="Generates a 3-page PDF report from all upstream pipeline results. Run Vision, OCR, Comparison, and AI first.",
 )
-async def generate(
+def generate(
     inspection_id: str = FPath(..., description="UUID from the Upload endpoint.")
 ) -> ReportResult:
     try:
@@ -37,7 +37,7 @@ async def generate(
     summary="Download the generated PDF report",
     description="Returns the PDF file. Run the generate endpoint first.",
 )
-async def download(
+def download(
     inspection_id: str = FPath(..., description="UUID from the Upload endpoint.")
 ) -> FileResponse:
     try:

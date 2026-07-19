@@ -26,7 +26,7 @@ router = APIRouter(prefix="/api/v1/comparison", tags=["Comparison"])
         "Returns a per-field risk breakdown and total risk score."
     ),
 )
-async def analyze_comparison(
+def analyze_comparison(
     inspection_id: str = Path(..., description="UUID from the Upload endpoint.")
 ) -> ComparisonResult:
     """Validate Dell label fields for the given inspection."""

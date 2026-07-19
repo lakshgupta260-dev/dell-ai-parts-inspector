@@ -72,7 +72,7 @@ class PipelineResult(BaseModel):
         "Only the Upload endpoint needs to be called first."
     ),
 )
-async def run_pipeline(
+def run_pipeline(
     inspection_id: str = Path(..., description="UUID from the Upload endpoint."),
     db: Session = Depends(get_db),
 ) -> PipelineResult:

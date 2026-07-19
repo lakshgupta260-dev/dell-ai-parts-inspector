@@ -45,7 +45,7 @@ router = APIRouter(prefix="/api/v1/vision", tags=["Vision"])
         500: {"model": ErrorResponse, "description": "Unexpected server error."},
     },
 )
-async def analyze_inspection_images(
+def analyze_inspection_images(
     inspection_id: str = Path(
         ...,
         description="UUID of the inspection session returned by the Upload endpoint.",

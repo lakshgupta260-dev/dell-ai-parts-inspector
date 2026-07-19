@@ -58,8 +58,9 @@ def _get_ocr_engine():
             use_doc_unwarping=False,             # skip geometric unwarping
             use_textline_orientation=True,       # auto-correct individual rotated text lines
             lang="en",
+            enable_mkldnn=False,                 # FIX: Disable OneDNN to prevent PIR attribute conversion crash on PaddlePaddle 3.x
         )
-        logger.info("PaddleOCR v3 engine ready.")
+        logger.info("PaddleOCR v3 engine ready (MKLDNN disabled).")
     return _ocr_engine
 
 

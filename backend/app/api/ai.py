@@ -22,7 +22,7 @@ router = APIRouter(prefix="/api/v1/ai", tags=["AI Reasoning"])
         "Run Vision, OCR, and Comparison endpoints first."
     ),
 )
-async def ai_analyze(
+def ai_analyze(
     inspection_id: str = Path(..., description="UUID from the Upload endpoint.")
 ) -> AIAnalysisResult:
     try:
