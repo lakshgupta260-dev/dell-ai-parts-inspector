@@ -77,6 +77,9 @@ class SingleImageAnalysis(BaseModel):
         default_factory=list,
         description="All rectangular label/sticker regions detected in the image.",
     )
+    has_label: bool = Field(default=False, description="True if at least one clear label region was found.")
+    has_qr_code: bool = Field(default=False, description="True if a QR/DataMatrix code was detected.")
+    has_burn_marks: bool = Field(default=False, description="True if dark anomalies resembling burn marks are detected.")
     edge_density: float = Field(
         ...,
         description=(

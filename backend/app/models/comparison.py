@@ -44,4 +44,12 @@ class ComparisonResult(BaseModel):
         default="",
         description="Human-readable summary of the comparison result."
     )
+    golden_reference_used: Optional[str] = Field(
+        default=None,
+        description="The name of the golden profile used as a reference (e.g. 'latitude')."
+    )
+    similarity_metrics: dict = Field(
+        default_factory=dict,
+        description="Scores comparing the upload to the golden reference (e.g., ocr_similarity, vision_match, anomaly_score)."
+    )
     status: str = Field(default="comparison_complete")

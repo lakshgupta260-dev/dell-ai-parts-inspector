@@ -16,9 +16,14 @@ import logging
 import re
 from typing import List
 
+import json
+from pathlib import Path
+
+from app.core.config import settings
 from app.models.comparison import ComparisonResult, FieldCheck
 from app.models.ocr import OCRResult
-from app.utils.results_store import STAGE_OCR, load_result, save_result, STAGE_COMPARISON
+from app.models.vision import VisionResult
+from app.utils.results_store import STAGE_OCR, STAGE_VISION, load_result, save_result, STAGE_COMPARISON
 
 logger = logging.getLogger(__name__)
 
@@ -38,24 +43,73 @@ def run_comparison(inspection_id: str) -> ComparisonResult:
     Saves and returns a ComparisonResult.
     """
     ocr: OCRResult = load_result(inspection_id, STAGE_OCR, OCRResult)
+    vision: VisionResult = load_result(inspection_id, STAGE_VISION, VisionResult)
     fields = ocr.combined_dell_fields
     checks: List[FieldCheck] = []
 
-    # 1. Service Tag
+    # Identify model to load corresponding golden profile
+    model_name_extracted = fields.model_name.lower() if fields.model_name else ""
+    matched_model = "xps"  # Default fallback
+    for m in _KNOWN_DELL_MODELS:
+        if m in model_name_extracted:
+            matched_model = m
+            break
+            
+    # Load Golden Profile
+    golden_profile = {}
+    profile_path = Path("datasets/golden/profiles") / f"{matched_model}.json"
+    if profile_path.exists():
+        try:
+            golden_profile = json.loads(profile_path.read_text())
+            logger.info("Loaded golden profile for %s", matched_model)
+        except Exception as e:
+            logger.warning("Failed to load golden profile: %s", e)
+
+    # OCR Checks
     checks.append(_check_service_tag(fields.service_tag))
-    # 2. Express Service Code
     checks.append(_check_esc(fields.express_service_code))
-    # 3. Part Number
     checks.append(_check_part_number(fields.part_number))
-    # 4. Model Name
     checks.append(_check_model(fields.model_name))
-    # 5. OCR confidence
+    
     avg_conf = (ocr.front.avg_confidence + ocr.back.avg_confidence) / 2
     checks.append(_check_ocr_confidence(avg_conf))
 
     total_risk = min(100, sum(c.risk_contribution for c in checks))
     missing = [c.field_name for c in checks if not c.is_present]
     violations = [c.field_name for c in checks if c.is_present and not c.is_valid_format]
+
+    # Calculate Vision/Anomaly Golden Metrics
+    similarity_metrics = {}
+    if golden_profile:
+        expected_vision = golden_profile.get("vision_features", {})
+        
+        # We aggregate flags from both front and back
+        has_qr = vision.front.has_qr_code or vision.back.has_qr_code
+        has_label = vision.front.has_label or vision.back.has_label
+        has_burns = vision.front.has_burn_marks or vision.back.has_burn_marks
+        
+        vision_match = 100
+        if expected_vision.get("has_qr_code") and not has_qr:
+            vision_match -= 40
+            total_risk = min(100, total_risk + 30)
+            missing.append("QR/DataMatrix Code (Golden Mismatch)")
+            
+        if expected_vision.get("has_label") and not has_label:
+            vision_match -= 50
+            total_risk = min(100, total_risk + 40)
+            missing.append("Physical Label (Golden Mismatch)")
+            
+        anomaly_score = 0
+        if has_burns and not expected_vision.get("has_burn_marks"):
+            anomaly_score = 100
+            total_risk = min(100, total_risk + 50)
+            violations.append("Burn Marks Detected (Anomaly)")
+            
+        similarity_metrics = {
+            "ocr_similarity": max(0, 100 - (len(missing) * 15) - (len(violations) * 10)),
+            "vision_match": max(0, vision_match),
+            "anomaly_score": anomaly_score
+        }
 
     summary = _build_summary(total_risk, missing, violations)
     logger.info("Comparison complete for %s — risk=%d, missing=%s", inspection_id, total_risk, missing)
@@ -67,6 +121,8 @@ def run_comparison(inspection_id: str) -> ComparisonResult:
         missing_critical_fields=missing,
         format_violations=violations,
         comparison_summary=summary,
+        golden_reference_used=matched_model if golden_profile else None,
+        similarity_metrics=similarity_metrics,
     )
     save_result(inspection_id, STAGE_COMPARISON, result)
     return result

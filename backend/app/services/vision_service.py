@@ -116,11 +116,18 @@ def _analyze_single_image(image: np.ndarray, image_path: str) -> SingleImageAnal
     edge_density = _compute_edge_density(image)
     flags = _collect_quality_flags(quality)
 
+    has_label = len(label_regions) > 0
+    has_qr_code = _detect_qr_code(image)
+    has_burn_marks = _detect_burn_marks(image)
+
     return SingleImageAnalysis(
         image_path=image_path,
         quality=quality,
         color=color,
         label_regions=label_regions,
+        has_label=has_label,
+        has_qr_code=has_qr_code,
+        has_burn_marks=has_burn_marks,
         edge_density=edge_density,
         quality_flags=flags,
     )
@@ -293,6 +300,40 @@ def _compute_edge_density(image: np.ndarray) -> float:
     edges = cv2.Canny(blurred, _CANNY_LOW, _CANNY_HIGH)
     density = float(np.count_nonzero(edges)) / edges.size
     return round(density, 4)
+
+
+# ── Dataset Specific Heuristics ──────────────────────────────────────────────
+
+def _detect_qr_code(image: np.ndarray) -> bool:
+    """Detect if a QR code or DataMatrix code is present."""
+    detector = cv2.QRCodeDetector()
+    retval, decoded_info, points, straight_qrcode = detector.detectAndDecodeMulti(image)
+    return bool(retval)
+
+def _detect_burn_marks(image: np.ndarray) -> bool:
+    """
+    Heuristic to detect burn marks.
+    Looks for localized dark, brownish/black regions on the green motherboard.
+    """
+    # Convert to HSV to isolate dark regions independent of lighting
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    v_channel = hsv[:, :, 2]
+    
+    # Threshold for very dark regions (burn marks are usually very dark)
+    _, dark_mask = cv2.threshold(v_channel, 30, 255, cv2.THRESH_BINARY_INV)
+    
+    # Clean up noise
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    dark_mask = cv2.morphologyEx(dark_mask, cv2.MORPH_OPEN, kernel)
+    
+    contours, _ = cv2.findContours(dark_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        if area > 1000:  # If a dark patch is larger than 1000px, likely a burn
+            return True
+            
+    return False
 
 
 # ── Step 5: Quality flag collection ──────────────────────────────────────────

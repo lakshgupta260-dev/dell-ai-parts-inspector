@@ -93,7 +93,13 @@ def _run_langgraph(
         f"Front OCR confidence: {ocr.front.avg_confidence:.2%}, "
         f"Back OCR confidence: {ocr.back.avg_confidence:.2%}."
     )
+    golden_used = comparison.golden_reference_used or "None"
+    metrics = comparison.similarity_metrics or {}
     cmp_ctx = (
+        f"Golden Reference Profile Used: {golden_used}. "
+        f"Similarity Metrics against Golden: OCR Similarity={metrics.get('ocr_similarity', 100)}/100, "
+        f"Vision Match={metrics.get('vision_match', 100)}/100, "
+        f"Anomaly Score={metrics.get('anomaly_score', 0)}/100. "
         f"Comparison risk score: {comparison.total_risk_score}/100. "
         f"Missing fields: {comparison.missing_critical_fields}. "
         f"Format violations: {comparison.format_violations}. "
@@ -103,7 +109,8 @@ def _run_langgraph(
     SYSTEM = (
         "You are an expert Dell hardware authenticity inspector with 15 years experience. "
         "Analyse the provided inspection data and give precise, concise technical assessments. "
-        "Be factual, reference specific signals from the data, and be decisive."
+        "You are comparing the uploaded part against a known Golden Reference Profile. "
+        "Be factual, explicitly reference differences from the Golden Profile, and be decisive."
     )
 
     def call_llm(prompt: str) -> str:
@@ -129,11 +136,11 @@ def _run_langgraph(
 
     def analyze_discrepancies(state: InspectionState) -> InspectionState:
         analysis = call_llm(
-            f"Analyse these comparison engine results for a Dell hardware part.\n"
+            f"Analyse these comparison engine results for a Dell hardware part against the Golden Reference.\n"
             f"Comparison data: {cmp_ctx}\n"
             f"Visual context: {state['visual_analysis']}\n"
             f"Text context: {state['text_analysis']}\n"
-            f"In 2-3 sentences, summarise the key discrepancies and what they indicate."
+            f"In 2-3 sentences, summarise how much the uploaded part deviates from the Golden Reference and what the anomalies indicate."
         )
         return {**state, "discrepancy_analysis": analysis}
 

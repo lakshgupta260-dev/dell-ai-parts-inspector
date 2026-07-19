@@ -1,0 +1,13 @@
+{
+  "model_name": "optiplex",
+  "vision_features": {
+    "has_qr_code": true,
+    "has_label": true,
+    "has_burn_marks": false
+  },
+  "ocr_expected": {
+    "service_tag_format": "^[A-Z0-9]{7}$",
+    "express_service_code_format": "^\\d{11}$",
+    "part_number_format": "^(CN-[A-Z0-9]{6}-[A-Z0-9]{5}-[A-Z0-9]{3}-[A-Z0-9]{4}|[0-9A-Z]{7,12})$"
+  }
+}
