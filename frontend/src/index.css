@@ -1,0 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: #FAF9F5;
+  color: #1C1B2E;
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Corner-bracket "scan frame" signature motif */
+.scan-corners {
+  position: relative;
+}
+.scan-corners::before,
+.scan-corners::after,
+.scan-corners > .corner-tl,
+.scan-corners > .corner-br {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: currentColor;
+  opacity: 0.55;
+}
+.scan-corners::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.scan-corners::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+::selection {
+  background-color: #4338CA;
+  color: #FAF9F5;
+}
