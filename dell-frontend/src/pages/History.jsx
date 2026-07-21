@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { history, apiError } from "../lib/api.js";
-import { T } from "../lib/auth.jsx";
+import { useTheme } from "../lib/auth.jsx";
 import { Panel, Eyebrow, Loading, ErrorNote, Empty } from "../components/ui.jsx";
 import { HistoryTable } from "./Dashboard.jsx";
 
 const VERDICTS = ["All", "AUTHENTIC", "SUSPICIOUS", "COUNTERFEIT"];
 
 export default function History() {
+  const { T } = useTheme();
   const nav = useNavigate();
   const [all, setAll] = useState([]);
   const [err, setErr] = useState("");

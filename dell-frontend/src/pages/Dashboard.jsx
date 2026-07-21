@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { history, apiError } from "../lib/api.js";
-import { T, verdictTone, scoreTone } from "../lib/auth.jsx";
+import { verdictTone, scoreTone, useTheme } from "../lib/auth.jsx";
 import { Panel, Eyebrow, Tag, Loading, ErrorNote, Empty } from "../components/ui.jsx";
 
 export default function Dashboard() {
+  const { T } = useTheme();
   const nav = useNavigate();
   const [analytics, setAnalytics] = useState(null);
   const [items, setItems] = useState([]);
@@ -53,11 +54,11 @@ export default function Dashboard() {
         <Panel>
           <Eyebrow>Average fraud score</Eyebrow>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 14 }}>
-            <span style={{ fontFamily: T.mono, fontSize: 44, fontWeight: 700, color: scoreTone(analytics?.avg_fraud_score), lineHeight: 1 }}>{(analytics?.avg_fraud_score ?? 0).toFixed(1)}</span>
+            <span style={{ fontFamily: T.mono, fontSize: 44, fontWeight: 700, color: scoreTone(analytics?.avg_fraud_score, T), lineHeight: 1 }}>{(analytics?.avg_fraud_score ?? 0).toFixed(1)}</span>
             <span style={{ fontFamily: T.mono, fontSize: 16, color: T.inkDim }}>/ 100</span>
           </div>
           <div style={{ height: 8, background: T.bg, borderRadius: 4, overflow: "hidden", marginTop: 16, border: `1px solid ${T.line}` }}>
-            <div style={{ width: `${analytics?.avg_fraud_score ?? 0}%`, height: "100%", background: scoreTone(analytics?.avg_fraud_score), transition: "width .8s" }} />
+            <div style={{ width: `${analytics?.avg_fraud_score ?? 0}%`, height: "100%", background: scoreTone(analytics?.avg_fraud_score, T), transition: "width .8s" }} />
           </div>
           <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkFaint, marginTop: 10 }}>Mean across all completed inspections.</div>
         </Panel>
@@ -76,6 +77,7 @@ export default function Dashboard() {
 }
 
 function StatCard({ label, value, tone }) {
+  const { T } = useTheme();
   const [hov, setHov] = useState(false);
   return (
     <Panel style={{ transition: "transform .18s, border-color .18s", transform: hov ? "translateY(-3px)" : "none", borderColor: hov ? T.lineHi : T.line }}>
@@ -89,6 +91,7 @@ function StatCard({ label, value, tone }) {
 
 /* Reusable table used by dashboard + history. */
 export function HistoryTable({ rows, onOpen }) {
+  const { T } = useTheme();
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: T.mono, fontSize: 12.5 }}>
@@ -107,8 +110,9 @@ export function HistoryTable({ rows, onOpen }) {
   );
 }
 function Row({ r, onOpen }) {
+  const { T } = useTheme();
   const [hov, setHov] = useState(false);
-  const v = verdictTone(r.verdict);
+  const v = verdictTone(r.verdict, T);
   const td = { padding: "13px 16px", borderBottom: `1px solid ${T.line}`, color: T.inkDim };
   return (
     <tr onClick={() => onOpen(r.inspection_id)} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
@@ -116,7 +120,7 @@ function Row({ r, onOpen }) {
       <td style={{ ...td, color: T.ink }}>{r.service_tag || "—"}</td>
       <td style={td}>{r.model_name || "—"}</td>
       <td style={td}>{r.verdict ? <Tag tone={v.tone}>{v.label}</Tag> : <span style={{ color: T.inkFaint }}>pending</span>}</td>
-      <td style={{ ...td, color: scoreTone(r.fraud_score), fontWeight: 600 }}>{r.fraud_score ?? "—"}</td>
+      <td style={{ ...td, color: scoreTone(r.fraud_score, T), fontWeight: 600 }}>{r.fraud_score ?? "—"}</td>
       <td style={td}><span style={{ color: r.pipeline_status === "complete" ? T.green : T.inkDim, fontSize: 11 }}>{r.pipeline_status}</span></td>
       <td style={{ ...td, color: T.inkFaint }}>{r.uploaded_at ? new Date(r.uploaded_at).toLocaleDateString() : "—"}</td>
       <td style={{ ...td, color: hov ? T.dellHi : T.inkFaint }}>view →</td>

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { history, reportDownloadUrl, notify, apiError } from "../lib/api.js";
-import { T, verdictTone, scoreTone } from "../lib/auth.jsx";
+import { verdictTone, scoreTone, useTheme } from "../lib/auth.jsx";
 import { Panel, Eyebrow, Btn, ScoreDial, Tag, Loading, ErrorNote, Field } from "../components/ui.jsx";
 
 export default function InspectionDetail() {
+  const { T } = useTheme();
   const { id } = useParams();
   const nav = useNavigate();
   const [r, setR] = useState(null);
@@ -22,7 +23,7 @@ export default function InspectionDetail() {
   if (err) return <div><BackLink nav={nav} /><ErrorNote>{err}</ErrorNote></div>;
   if (!r) return null;
 
-  const v = verdictTone(r.verdict);
+  const v = verdictTone(r.verdict, T);
   const meta = [
     ["Service Tag", r.service_tag], ["Part Number", r.part_number], ["Model", r.model_name],
     ["Express Code", r.express_service_code], ["Inspector", r.inspector_username], ["Status", r.pipeline_status],
@@ -44,7 +45,7 @@ export default function InspectionDetail() {
       {/* verdict banner */}
       <Panel style={{ borderLeft: `4px solid ${v.tone}`, marginBottom: 16 }}>
         <div style={{ display: "flex", gap: 26, alignItems: "center", flexWrap: "wrap" }}>
-          <ScoreDial score={r.fraud_score} tone={scoreTone(r.fraud_score)} />
+          <ScoreDial score={r.fraud_score} tone={scoreTone(r.fraud_score, T)} />
           <div style={{ flex: 1, minWidth: 220 }}>
             <Tag tone={v.tone}>{v.label}</Tag>
             <div style={{ fontFamily: T.sans, fontSize: 26, fontWeight: 700, color: v.tone, margin: "12px 0 6px" }}>Fraud score {r.fraud_score ?? "—"}/100</div>
@@ -85,10 +86,12 @@ export default function InspectionDetail() {
 }
 
 function BackLink({ nav }) {
+  const { T } = useTheme();
   return <button onClick={() => nav(-1)} style={{ fontFamily: T.mono, fontSize: 12, color: T.inkDim, background: "none", border: "none", cursor: "pointer", marginBottom: 18, letterSpacing: "0.04em" }}>← Back</button>;
 }
 
 function QualityCard({ label, blur }) {
+  const { T } = useTheme();
   const ok = blur != null && blur >= 100; // convention: higher variance-of-Laplacian = sharper
   return (
     <Panel>
@@ -105,6 +108,7 @@ function QualityCard({ label, blur }) {
 }
 
 function NotifyCard({ id }) {
+  const { T } = useTheme();
   const [phone, setPhone] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState("");

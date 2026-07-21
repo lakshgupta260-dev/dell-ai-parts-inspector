@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { T, LASER } from "../lib/auth.jsx";
+import { T as NIGHT, useTheme } from "../lib/auth.jsx";
+
+function useT() { const c = useTheme(); return c?.T || NIGHT; }
 
 /* ============================ animated background ========================= */
-export function ScanGrid() {
+export function ScanGrid({ palette } = {}) {
+  const ctxT = useT();
+  const T = palette || ctxT;
+  const LASER = T.laser;
   const ref = useRef(null);
   useEffect(() => {
     const c = ref.current, ctx = c.getContext("2d");
@@ -15,13 +20,13 @@ export function ScanGrid() {
       t += reduce ? 0 : 1;
       ctx.clearRect(0, 0, w, h);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = "rgba(61,220,132,0.10)";
+      ctx.strokeStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},${T.gridOpacity})`;
       ctx.beginPath();
       for (let x = (t * 0.12) % G; x < w; x += G) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
       for (let y = 0; y < h; y += G) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
       ctx.stroke();
       const sweepY = (t * 1.0) % (h + 320) - 160;
-      ctx.fillStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},0.9)`;
+      ctx.fillStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},${T.nodeOpacity})`;
       for (let x = 0; x < w; x += G) for (let y = 0; y < h; y += G) {
         const d = Math.abs(y - sweepY);
         if (d < 60) { ctx.globalAlpha = (1 - d / 60) * 0.45; ctx.fillRect(x - 1, y - 1, 2, 2); }
@@ -29,10 +34,10 @@ export function ScanGrid() {
       ctx.globalAlpha = 1;
       const grd = ctx.createLinearGradient(0, sweepY - 44, 0, sweepY + 44);
       grd.addColorStop(0, `rgba(${LASER.r},${LASER.g},${LASER.b},0)`);
-      grd.addColorStop(0.5, `rgba(${LASER.r},${LASER.g},${LASER.b},0.11)`);
+      grd.addColorStop(0.5, `rgba(${LASER.r},${LASER.g},${LASER.b},${T.beamOpacity})`);
       grd.addColorStop(1, `rgba(${LASER.r},${LASER.g},${LASER.b},0)`);
       ctx.fillStyle = grd; ctx.fillRect(0, sweepY - 44, w, 88);
-      ctx.strokeStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},0.38)`;
+      ctx.strokeStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},${T.lineOpacity})`;
       ctx.beginPath(); ctx.moveTo(0, sweepY); ctx.lineTo(w, sweepY); ctx.stroke();
       raf = requestAnimationFrame(frame);
     }
@@ -44,6 +49,7 @@ export function ScanGrid() {
 
 /* -------------------------------- Logo ----------------------------------- */
 export function Logo({ size = 26 }) {
+  const T = useT();
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <rect x="2" y="2" width="28" height="28" rx="2" stroke={T.dell} strokeWidth="1.5" />
@@ -56,6 +62,7 @@ export function Logo({ size = 26 }) {
 
 /* ------------------------------- Button ---------------------------------- */
 export function Btn({ children, onClick, variant = "solid", tone, full, type = "button", disabled, size = "md" }) {
+  const T = useT();
   if (tone == null) tone = T.dell;
   const [hov, setHov] = useState(false);
   const pad = size === "lg" ? "14px 26px" : size === "sm" ? "7px 14px" : "11px 20px";
@@ -88,16 +95,19 @@ function Corner({ pos, c }) {
 
 /* ------------------------------- Panel ----------------------------------- */
 export function Panel({ children, style, pad = 22 }) {
+  const T = useT();
   return <div style={{ position: "relative", background: T.panel, border: `1px solid ${T.line}`, borderRadius: 3, padding: pad, ...style }}>{children}</div>;
 }
 
 export function Eyebrow({ children }) {
+  const T = useT();
   return <div style={{ fontFamily: T.mono, fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: T.inkFaint, display: "flex", alignItems: "center", gap: 8 }}>
     <span style={{ width: 14, height: 1, background: T.lineHi }} />{children}
   </div>;
 }
 
 export function Field({ label, hint, ...props }) {
+  const T = useT();
   const [foc, setFoc] = useState(false);
   return (
     <label style={{ display: "block", marginBottom: 18 }}>
@@ -110,10 +120,12 @@ export function Field({ label, hint, ...props }) {
 }
 
 export function Tag({ children, tone }) {
+  const T = useT();
   return <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", color: tone, border: `1px solid ${tone}55`, background: `${tone}12`, padding: "3px 9px", borderRadius: 2, whiteSpace: "nowrap" }}>{children}</span>;
 }
 
 export function ScoreDial({ score, tone, size = 88 }) {
+  const T = useT();
   const s = score ?? 0, r = size * 0.38, circ = 2 * Math.PI * r, off = circ * (1 - s / 100), c = size / 2;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -127,6 +139,7 @@ export function ScoreDial({ score, tone, size = 88 }) {
 
 /* Radar sweep for the running state. */
 export function Radar({ size = 120 }) {
+  const T = useT();
   const c = size / 2;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ margin: "0 auto", display: "block" }}>
@@ -144,13 +157,16 @@ export function Radar({ size = 120 }) {
 
 /* Full-page loading + error + empty helpers. */
 export function Loading({ label = "Loading…" }) {
+  const T = useT();
   return <div style={{ padding: 60, textAlign: "center", fontFamily: T.mono, fontSize: 13, color: T.inkDim }}>
     <Radar size={80} /><div style={{ marginTop: 16 }}>{label}</div>
   </div>;
 }
 export function ErrorNote({ children }) {
+  const T = useT();
   return <div style={{ fontFamily: T.mono, fontSize: 12.5, color: T.red, padding: "10px 14px", border: `1px solid ${T.red}44`, background: `${T.red}10`, borderRadius: 2 }}>⚠ {children}</div>;
 }
 export function Empty({ children }) {
+  const T = useT();
   return <div style={{ padding: 50, textAlign: "center", fontFamily: T.mono, fontSize: 13, color: T.inkFaint }}>{children}</div>;
 }

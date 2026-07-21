@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { uploadInspection, runPipeline, apiError } from "../lib/api.js";
-import { T, verdictTone, scoreTone } from "../lib/auth.jsx";
+import { verdictTone, scoreTone, useTheme } from "../lib/auth.jsx";
 import { Panel, Eyebrow, Btn, Radar, ScoreDial, Tag, ErrorNote } from "../components/ui.jsx";
 
 const STAGES = [
@@ -13,6 +13,7 @@ const STAGES = [
 ];
 
 export default function NewInspection() {
+  const { T } = useTheme();
   const nav = useNavigate();
   const [step, setStep] = useState(0);         // 0 upload, 1 running, 2 result
   const [front, setFront] = useState(null);
@@ -85,6 +86,7 @@ export default function NewInspection() {
 }
 
 function DropZone({ label, hint, file, setFile, id }) {
+  const { T } = useTheme();
   const [drag, setDrag] = useState(false);
   const preview = file ? URL.createObjectURL(file) : null;
   return (
@@ -115,6 +117,7 @@ function DropZone({ label, hint, file, setFile, id }) {
 }
 
 function RunningView() {
+  const { T } = useTheme();
   return (
     <Panel pad={40}>
       <div style={{ textAlign: "center" }}>
@@ -137,11 +140,12 @@ function RunningView() {
 }
 
 function ResultCard({ r }) {
-  const v = verdictTone(r.verdict);
+  const { T } = useTheme();
+  const v = verdictTone(r.verdict, T);
   return (
     <Panel style={{ borderLeft: `4px solid ${v.tone}` }}>
       <div style={{ display: "flex", gap: 26, alignItems: "center", flexWrap: "wrap" }}>
-        <ScoreDial score={r.fraud_score} tone={scoreTone(r.fraud_score)} />
+        <ScoreDial score={r.fraud_score} tone={scoreTone(r.fraud_score, T)} />
         <div style={{ flex: 1, minWidth: 200 }}>
           <Tag tone={v.tone}>{v.label}</Tag>
           <div style={{ fontFamily: T.sans, fontSize: 24, fontWeight: 700, color: v.tone, margin: "12px 0 4px" }}>Fraud score {r.fraud_score ?? "—"}/100</div>
@@ -157,6 +161,7 @@ function ResultCard({ r }) {
   );
 }
 function Metric({ label, value, tone }) {
+  const { T } = useTheme();
   return (
     <div>
       <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T.inkFaint }}>{label}</div>
@@ -167,6 +172,7 @@ function Metric({ label, value, tone }) {
 
 /* Shows the per-stage ok/error statuses the pipeline returns. */
 function StageStrip({ r }) {
+  const { T } = useTheme();
   const map = [
     ["Vision", r.vision_status], ["OCR", r.ocr_status], ["Comparison", r.comparison_status],
     ["AI", r.ai_status], ["Report", r.report_status],
