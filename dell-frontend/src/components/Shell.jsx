@@ -16,7 +16,7 @@ export default function Shell() {
 
   return (
     <div style={{ position: "relative", zIndex: 2, minHeight: "100vh" }}>
-      <header style={{ position: "sticky", top: 0, zIndex: 10, background: `${T.bg}e8`, backdropFilter: "blur(12px)", borderBottom: `1px solid ${T.line}` }}>
+      <header style={{ position: "sticky", top: 0, zIndex: 10, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${T.line}` }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 62, display: "flex", alignItems: "center", gap: 28 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => nav("/")}>
             <Logo /><span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 17, letterSpacing: "-0.01em", color: T.ink }}>Dell Parts Inspector</span>

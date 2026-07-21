@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { T } from "../lib/auth.jsx";
+import { T, LASER } from "../lib/auth.jsx";
 
 /* ============================ animated background ========================= */
 export function ScanGrid() {
@@ -15,24 +15,24 @@ export function ScanGrid() {
       t += reduce ? 0 : 1;
       ctx.clearRect(0, 0, w, h);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = "rgba(55,74,87,0.16)";
+      ctx.strokeStyle = "rgba(61,220,132,0.10)";
       ctx.beginPath();
       for (let x = (t * 0.12) % G; x < w; x += G) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
       for (let y = 0; y < h; y += G) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
       ctx.stroke();
       const sweepY = (t * 1.0) % (h + 320) - 160;
-      ctx.fillStyle = "rgba(15,125,194,0.9)";
+      ctx.fillStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},0.9)`;
       for (let x = 0; x < w; x += G) for (let y = 0; y < h; y += G) {
         const d = Math.abs(y - sweepY);
         if (d < 60) { ctx.globalAlpha = (1 - d / 60) * 0.45; ctx.fillRect(x - 1, y - 1, 2, 2); }
       }
       ctx.globalAlpha = 1;
       const grd = ctx.createLinearGradient(0, sweepY - 44, 0, sweepY + 44);
-      grd.addColorStop(0, "rgba(15,125,194,0)");
-      grd.addColorStop(0.5, "rgba(15,125,194,0.09)");
-      grd.addColorStop(1, "rgba(15,125,194,0)");
+      grd.addColorStop(0, `rgba(${LASER.r},${LASER.g},${LASER.b},0)`);
+      grd.addColorStop(0.5, `rgba(${LASER.r},${LASER.g},${LASER.b},0.11)`);
+      grd.addColorStop(1, `rgba(${LASER.r},${LASER.g},${LASER.b},0)`);
       ctx.fillStyle = grd; ctx.fillRect(0, sweepY - 44, w, 88);
-      ctx.strokeStyle = "rgba(15,125,194,0.32)";
+      ctx.strokeStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},0.38)`;
       ctx.beginPath(); ctx.moveTo(0, sweepY); ctx.lineTo(w, sweepY); ctx.stroke();
       raf = requestAnimationFrame(frame);
     }
@@ -55,7 +55,8 @@ export function Logo({ size = 26 }) {
 }
 
 /* ------------------------------- Button ---------------------------------- */
-export function Btn({ children, onClick, variant = "solid", tone = T.dell, full, type = "button", disabled, size = "md" }) {
+export function Btn({ children, onClick, variant = "solid", tone, full, type = "button", disabled, size = "md" }) {
+  if (tone == null) tone = T.dell;
   const [hov, setHov] = useState(false);
   const pad = size === "lg" ? "14px 26px" : size === "sm" ? "7px 14px" : "11px 20px";
   return (

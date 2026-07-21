@@ -22,8 +22,7 @@ function GlobalStyles() {
       @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
       .pulse { animation: pulse 1.2s ease-in-out infinite; }
       * { box-sizing: border-box; }
-      html, body, #root { margin: 0; min-height: 100%; }
-      body { background: ${T.bg}; }
+      html, body, #root { margin: 0; min-height: 100%; background: ${T.bg}; }
       ::selection { background: ${T.dell}44; }
       ::-webkit-scrollbar { width: 10px; height: 10px; }
       ::-webkit-scrollbar-track { background: ${T.bg}; }
@@ -34,11 +33,12 @@ function GlobalStyles() {
   );
 }
 
+/* One shared layout: black background + green ScanGrid on EVERY page. */
 export default function App() {
   return (
     <AuthProvider>
       <GlobalStyles />
-      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: `radial-gradient(circle at 50% 0%, ${T.bg2}, ${T.bg})`, fontFamily: T.sans, color: T.ink }}>
+      <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: `radial-gradient(circle at 50% -8%, ${T.bg2}, ${T.bg})`, fontFamily: T.sans, color: T.ink }}>
         <ScanGrid />
         <BrowserRouter>
           <Routes>
