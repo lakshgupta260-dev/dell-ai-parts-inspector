@@ -55,10 +55,10 @@ export default function NewInspection() {
         {steps.map((s, i) => (
           <React.Fragment key={s}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 30, height: 30, borderRadius: 2, display: "grid", placeItems: "center", fontFamily: T.mono, fontSize: 13, fontWeight: 700, border: `1px solid ${i <= step ? T.dell : T.line}`, background: i < step ? T.dell : "transparent", color: i < step ? "#04121c" : i === step ? T.dellHi : T.inkFaint, transition: "all .3s" }}>
+              <div style={{ width: 30, height: 30, borderRadius: "50%", display: "grid", placeItems: "center", fontFamily: T.sans, fontSize: 14, fontWeight: 700, border: `1px solid ${i <= step ? T.dell : T.line}`, background: i < step ? T.dell : "transparent", color: i < step ? "#04121c" : i === step ? T.dellHi : T.inkFaint, transition: "all .3s" }}>
                 {i < step ? "✓" : i + 1}
               </div>
-              <span style={{ fontFamily: T.mono, fontSize: 12, letterSpacing: "0.06em", textTransform: "uppercase", color: i === step ? T.ink : T.inkFaint }}>{s}</span>
+              <span style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.02em", color: i === step ? T.ink : T.inkFaint }}>{s}</span>
             </div>
             {i < steps.length - 1 && <div style={{ flex: 1, height: 1, margin: "0 16px", background: i < step ? T.dell : T.line, transition: "background .3s" }} />}
           </React.Fragment>
@@ -74,7 +74,7 @@ export default function NewInspection() {
             <DropZone label="Back image" hint="Rear-facing photo (label side)" file={back} setFile={setBack} id="back" />
           </div>
           <Btn size="lg" disabled={!front || !back} onClick={run}>Run full pipeline →</Btn>
-          {(!front || !back) && <span style={{ fontFamily: T.mono, fontSize: 11, color: T.inkFaint, marginLeft: 14 }}>Both images are required.</span>}
+          {(!front || !back) && <span style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 500, color: T.inkDim, marginLeft: 14 }}>Both images are required.</span>}
         </div>
       )}
 
@@ -110,13 +110,13 @@ function DropZone({ label, hint, file, setFile, id }) {
         {preview ? (
           <div style={{ position: "relative", width: "100%" }}>
             <img src={preview} alt={label} style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }} />
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "#000a", padding: "6px 10px", fontFamily: T.mono, fontSize: 11, color: T.ink, textAlign: "left" }}>{file.name} · {(file.size / 1024).toFixed(0)} KB · click to replace</div>
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.6)", padding: "8px 12px", fontFamily: T.sans, fontSize: 12, color: "#fff", textAlign: "left" }}>{file.name} · {(file.size / 1024).toFixed(0)} KB</div>
           </div>
         ) : (
           <div>
             <div style={{ fontSize: 30, marginBottom: 10, color: T.inkFaint }}>⊹</div>
             <div style={{ fontFamily: T.sans, fontSize: 15, color: T.ink }}>Drop here or click</div>
-            <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkFaint, marginTop: 6 }}>{hint} — JPG, PNG, WebP</div>
+            <div style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 500, color: T.inkDim, marginTop: 6 }}>{hint} — JPG, PNG, WebP</div>
           </div>
         )}
         <input id={id} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => setFile(e.target.files[0])} />
@@ -149,7 +149,7 @@ function RunningView({ progress, front }) {
         {/* Right Side: Checklist */}
         <div>
           <Radar />
-          <div style={{ fontFamily: T.mono, fontSize: 13, letterSpacing: "0.1em", textTransform: "uppercase", color: T.dellHi, marginTop: 20 }}>Running pipeline…</div>
+          <div style={{ fontFamily: T.sans, fontSize: 15, fontWeight: 600, color: T.dellHi, marginTop: 20 }}>Running pipeline…</div>
           <div style={{ fontFamily: T.mono, fontSize: 12, color: T.inkDim, marginTop: 8 }}>Vision → OCR → Comparison → AI → PDF</div>
           <div style={{ maxWidth: 420, marginTop: 26, display: "flex", flexDirection: "column", gap: 9 }}>
             {STAGES.map(([name, detail], i) => {

@@ -49,7 +49,7 @@ export default function Dashboard() {
           <div style={{ height: 8, background: T.bg, borderRadius: 4, overflow: "hidden", marginTop: 16, border: `1px solid ${T.line}` }}>
             <div style={{ width: `${analytics?.pass_rate ?? 0}%`, height: "100%", background: `linear-gradient(90deg,${T.green}88,${T.green})`, transition: "width .8s" }} />
           </div>
-          <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkFaint, marginTop: 10 }}>Share of parts verdicted AUTHENTIC.</div>
+          <div style={{ fontFamily: T.sans, fontSize: 13, color: T.inkDim, marginTop: 10 }}>Share of parts verdicted AUTHENTIC.</div>
         </Panel>
         <Panel>
           <Eyebrow>Average fraud score</Eyebrow>
@@ -60,14 +60,14 @@ export default function Dashboard() {
           <div style={{ height: 8, background: T.bg, borderRadius: 4, overflow: "hidden", marginTop: 16, border: `1px solid ${T.line}` }}>
             <div style={{ width: `${analytics?.avg_fraud_score ?? 0}%`, height: "100%", background: scoreTone(analytics?.avg_fraud_score, T), transition: "width .8s" }} />
           </div>
-          <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkFaint, marginTop: 10 }}>Mean across all completed inspections.</div>
+          <div style={{ fontFamily: T.sans, fontSize: 13, color: T.inkDim, marginTop: 10 }}>Mean across all completed inspections.</div>
         </Panel>
       </div>
 
       <Panel pad={0} className="slide-up stagger-3">
         <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Eyebrow>Recent inspections</Eyebrow>
-          <button onClick={() => nav("/history")} style={{ fontFamily: T.mono, fontSize: 11, color: T.dellHi, background: "none", border: "none", cursor: "pointer" }}>view all →</button>
+          <button onClick={() => nav("/history")} style={{ fontFamily: T.sans, fontWeight: 600, fontSize: 13, color: T.dellHi, background: "none", border: "none", cursor: "pointer" }}>view all →</button>
         </div>
         {items.length ? <HistoryTable rows={items} onOpen={(id) => nav(`/inspection/${id}`)} /> :
           <Empty>No inspections yet. Start one from <b style={{ color: T.dellHi }}>New Inspection</b>.</Empty>}
@@ -82,7 +82,7 @@ function StatCard({ label, value, tone }) {
   return (
     <Panel style={{ transition: "transform .18s, border-color .18s", transform: hov ? "translateY(-3px)" : "none", borderColor: hov ? T.lineHi : T.line }}>
       <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-        <div style={{ fontFamily: T.mono, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: T.inkFaint }}>{label}</div>
+        <div style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.02em", textTransform: "uppercase", color: T.inkDim }}>{label}</div>
         <div style={{ fontFamily: T.mono, fontSize: 40, fontWeight: 700, color: tone, marginTop: 8, lineHeight: 1 }}>{value}</div>
       </div>
     </Panel>

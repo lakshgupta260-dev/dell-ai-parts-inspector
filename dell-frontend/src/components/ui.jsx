@@ -31,8 +31,8 @@ export function Btn({ children, onClick, variant = "solid", tone, full, type = "
     <button type={type} onClick={onClick} disabled={disabled}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        position: "relative", fontFamily: T.mono, fontSize: size === "sm" ? 12 : 13, fontWeight: 600,
-        letterSpacing: "0.06em", textTransform: "uppercase", padding: pad, cursor: disabled ? "not-allowed" : "pointer",
+        position: "relative", fontFamily: T.sans, fontSize: size === "sm" ? 13 : 14, fontWeight: 600,
+        letterSpacing: "0.02em", padding: pad, cursor: disabled ? "not-allowed" : "pointer",
         border: `1px solid ${variant === "solid" ? tone : T.lineHi}`, borderRadius: 2, width: full ? "100%" : "auto",
         color: variant === "solid" ? "#ffffff" : tone, background: variant === "solid" ? tone : "transparent",
         overflow: "hidden", transition: "all .18s ease", opacity: disabled ? 0.5 : 1,
@@ -57,7 +57,7 @@ export function Panel({ children, style, pad = 22, className = "" }) {
 
 export function Eyebrow({ children }) {
   const T = useT();
-  return <div style={{ fontFamily: T.mono, fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: T.inkFaint, display: "flex", alignItems: "center", gap: 8 }}>
+  return <div style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: T.inkDim, display: "flex", alignItems: "center", gap: 8 }}>
     <span style={{ width: 14, height: 1, background: T.lineHi }} />{children}
   </div>;
 }
@@ -67,17 +67,17 @@ export function Field({ label, hint, ...props }) {
   const [foc, setFoc] = useState(false);
   return (
     <label style={{ display: "block", marginBottom: 18 }}>
-      <span style={{ display: "block", fontFamily: T.mono, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: T.inkFaint, marginBottom: 8 }}>{label}</span>
+      <span style={{ display: "block", fontFamily: T.sans, fontSize: 13, fontWeight: 500, color: T.inkDim, marginBottom: 8 }}>{label}</span>
       <input {...props} onFocus={() => setFoc(true)} onBlur={() => setFoc(false)}
-        style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", background: T.bg, color: T.ink, fontFamily: T.mono, fontSize: 14, border: `1px solid ${foc ? T.dell : T.line}`, borderRadius: 2, outline: "none", transition: "border .18s", boxShadow: foc ? `0 0 0 3px ${T.dell}22` : "none" }} />
-      {hint && <span style={{ display: "block", fontFamily: T.mono, fontSize: 10, color: T.inkFaint, marginTop: 6 }}>{hint}</span>}
+        style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", background: T.bg, color: T.ink, fontFamily: T.sans, fontSize: 15, border: `1px solid ${foc ? T.dell : T.line}`, borderRadius: 6, outline: "none", transition: "border .18s, box-shadow .18s", boxShadow: foc ? `0 0 0 3px ${T.dell}22` : "none" }} />
+      {hint && <span style={{ display: "block", fontFamily: T.sans, fontSize: 12, color: T.inkFaint, marginTop: 6 }}>{hint}</span>}
     </label>
   );
 }
 
 export function Tag({ children, tone }) {
   const T = useT();
-  return <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", color: tone, border: `1px solid ${tone}55`, background: `${tone}12`, padding: "3px 9px", borderRadius: 2, whiteSpace: "nowrap" }}>{children}</span>;
+  return <span style={{ fontFamily: T.sans, fontSize: 12, fontWeight: 600, letterSpacing: "0.02em", color: tone, border: `1px solid ${tone}44`, background: `${tone}12`, padding: "4px 10px", borderRadius: 12, whiteSpace: "nowrap" }}>{children}</span>;
 }
 
 export function ScoreDial({ score, tone, size = 88 }) {
@@ -87,8 +87,8 @@ export function ScoreDial({ score, tone, size = 88 }) {
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <circle cx={c} cy={c} r={r} fill="none" stroke={T.line} strokeWidth="4" />
       <circle cx={c} cy={c} r={r} fill="none" stroke={tone} strokeWidth="4" strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" transform={`rotate(-90 ${c} ${c})`} style={{ transition: "stroke-dashoffset 1s ease" }} />
-      <text x={c} y={c - 2} textAnchor="middle" fontFamily={T.mono} fontSize={size * 0.25} fontWeight="700" fill={tone}>{score ?? "—"}</text>
-      <text x={c} y={c + size * 0.15} textAnchor="middle" fontFamily={T.mono} fontSize={size * 0.09} fill={T.inkFaint} letterSpacing="1">/ 100</text>
+      <text x={c} y={c - 2} textAnchor="middle" fontFamily={T.mono} fontSize={size * 0.28} fontWeight="700" fill={tone}>{score ?? "—"}</text>
+      <text x={c} y={c + size * 0.15} textAnchor="middle" fontFamily={T.sans} fontSize={size * 0.11} fontWeight="500" fill={T.inkDim}>/ 100</text>
     </svg>
   );
 }
@@ -114,15 +114,15 @@ export function Radar({ size = 120 }) {
 /* Full-page loading + error + empty helpers. */
 export function Loading({ label = "Loading…" }) {
   const T = useT();
-  return <div style={{ padding: 60, textAlign: "center", fontFamily: T.mono, fontSize: 13, color: T.inkDim }}>
-    <Radar size={80} /><div style={{ marginTop: 16 }}>{label}</div>
+  return <div style={{ padding: 60, textAlign: "center", fontFamily: T.sans, fontSize: 14, fontWeight: 500, color: T.inkDim }}>
+    <Radar size={80} /><div style={{ marginTop: 20 }}>{label}</div>
   </div>;
 }
 export function ErrorNote({ children }) {
   const T = useT();
-  return <div style={{ fontFamily: T.mono, fontSize: 12.5, color: T.red, padding: "10px 14px", border: `1px solid ${T.red}44`, background: `${T.red}10`, borderRadius: 2 }}>⚠ {children}</div>;
+  return <div style={{ fontFamily: T.sans, fontSize: 14, fontWeight: 500, color: T.red, padding: "12px 16px", border: `1px solid ${T.red}44`, background: `${T.red}10`, borderRadius: 6 }}>⚠ {children}</div>;
 }
 export function Empty({ children }) {
   const T = useT();
-  return <div style={{ padding: 50, textAlign: "center", fontFamily: T.mono, fontSize: 13, color: T.inkFaint }}>{children}</div>;
+  return <div style={{ padding: 50, textAlign: "center", fontFamily: T.sans, fontSize: 14, color: T.inkDim }}>{children}</div>;
 }

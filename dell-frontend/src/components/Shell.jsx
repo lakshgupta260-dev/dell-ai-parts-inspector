@@ -10,8 +10,8 @@ export default function Shell() {
   const links = [["/", "Dashboard"], ["/new", "New Inspection"], ["/history", "History"]];
 
   const linkStyle = ({ isActive }) => ({
-    position: "relative", padding: "8px 14px", fontFamily: T.mono, fontSize: 12, fontWeight: 600,
-    letterSpacing: "0.04em", textTransform: "uppercase", textDecoration: "none",
+    position: "relative", padding: "8px 14px", fontFamily: T.sans, fontSize: 13, fontWeight: 600,
+    letterSpacing: "0.01em", textDecoration: "none",
     color: isActive ? T.dellHi : T.inkDim, transition: "color .15s",
   });
 
@@ -35,10 +35,10 @@ export default function Shell() {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <ThemeToggle T={T} mode={mode} toggle={toggle} />
             <div style={{ textAlign: "right", lineHeight: 1.3 }}>
-              <div style={{ fontFamily: T.mono, fontSize: 12, color: T.ink }}>{user?.username}</div>
-              <div style={{ fontFamily: T.mono, fontSize: 10, color: T.inkFaint }}>{user?.role === "QA_MANAGER" ? "QA Manager" : "Inspector"}</div>
+              <div style={{ fontFamily: T.sans, fontSize: 14, fontWeight: 600, color: T.ink }}>{user?.username}</div>
+              <div style={{ fontFamily: T.sans, fontSize: 12, color: T.inkDim }}>{user?.role === "QA_MANAGER" ? "QA Manager" : "Inspector"}</div>
             </div>
-            <div style={{ width: 32, height: 32, borderRadius: 2, border: `1px solid ${T.lineHi}`, display: "grid", placeItems: "center", fontFamily: T.mono, fontSize: 13, color: T.dellHi, background: T.panel }}>
+            <div style={{ width: 34, height: 34, borderRadius: "50%", border: `1px solid ${T.lineHi}`, display: "grid", placeItems: "center", fontFamily: T.sans, fontSize: 14, fontWeight: 600, color: T.dellHi, background: T.panel }}>
               {user?.username?.[0]?.toUpperCase()}
             </div>
             <Btn variant="ghost" tone={T.inkDim} size="sm" onClick={() => { signOut(); nav("/login"); }}>Sign out</Btn>

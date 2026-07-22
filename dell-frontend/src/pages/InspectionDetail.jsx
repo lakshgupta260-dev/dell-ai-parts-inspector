@@ -35,7 +35,7 @@ export default function InspectionDetail() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16, marginBottom: 24 }} className="slide-up">
         <div>
           <Eyebrow>Inspection report</Eyebrow>
-          <h1 style={{ fontFamily: T.mono, fontSize: 20, fontWeight: 600, color: T.ink, margin: "10px 0 0", letterSpacing: "0.01em", wordBreak: "break-all" }}>{r.inspection_id}</h1>
+          <h1 style={{ fontFamily: T.sans, fontSize: 24, fontWeight: 700, color: T.ink, margin: "10px 0 0", letterSpacing: "-0.02em", wordBreak: "break-all" }}>{r.inspection_id}</h1>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           {r.report_path && <Btn tone={T.dell} size="sm" onClick={() => window.open(reportDownloadUrl(r.inspection_id), "_blank")}>Download PDF</Btn>}
@@ -60,8 +60,8 @@ export default function InspectionDetail() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 1, background: T.line, border: `1px solid ${T.line}`, borderRadius: 3, overflow: "hidden", marginBottom: 16 }} className="slide-up stagger-2">
         {meta.map(([k, val]) => (
           <div key={k} style={{ background: T.panel, padding: "14px 16px" }}>
-            <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T.inkFaint }}>{k}</div>
-            <div style={{ fontFamily: T.mono, fontSize: 13, color: T.ink, marginTop: 5, wordBreak: "break-word" }}>{val || "—"}</div>
+            <div style={{ fontFamily: T.sans, fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: T.inkDim }}>{k}</div>
+            <div style={{ fontFamily: T.mono, fontSize: 14, color: T.ink, marginTop: 5, wordBreak: "break-word" }}>{val || "—"}</div>
           </div>
         ))}
       </div>
@@ -70,7 +70,7 @@ export default function InspectionDetail() {
       {r.final_reasoning && (
         <Panel style={{ marginBottom: 16 }} className="slide-up stagger-3">
           <Eyebrow>AI reasoning</Eyebrow>
-          <p style={{ fontFamily: T.mono, fontSize: 13, color: T.inkDim, lineHeight: 1.7, marginTop: 14, marginBottom: 0, whiteSpace: "pre-wrap" }}>{r.final_reasoning}</p>
+          <p style={{ fontFamily: T.sans, fontSize: 14, color: T.inkDim, lineHeight: 1.6, marginTop: 14, marginBottom: 0, whiteSpace: "pre-wrap" }}>{r.final_reasoning}</p>
         </Panel>
       )}
 
@@ -89,7 +89,7 @@ export default function InspectionDetail() {
 
 function BackLink({ nav }) {
   const { T } = useTheme();
-  return <button onClick={() => nav(-1)} style={{ fontFamily: T.mono, fontSize: 12, color: T.inkDim, background: "none", border: "none", cursor: "pointer", marginBottom: 18, letterSpacing: "0.04em" }}>← Back</button>;
+  return <button onClick={() => nav(-1)} style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 600, color: T.inkDim, background: "none", border: "none", cursor: "pointer", marginBottom: 18, letterSpacing: "0.02em" }}>← Back</button>;
 }
 
 function QualityCard({ label, blur }) {
@@ -100,8 +100,8 @@ function QualityCard({ label, blur }) {
       <Eyebrow>{label}</Eyebrow>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
         <div>
-          <div style={{ fontFamily: T.mono, fontSize: 10, color: T.inkFaint, letterSpacing: "0.08em", textTransform: "uppercase" }}>Blur score</div>
-          <div style={{ fontFamily: T.mono, fontSize: 22, fontWeight: 600, color: T.ink, marginTop: 4 }}>{blur != null ? blur.toFixed(1) : "—"}</div>
+          <div style={{ fontFamily: T.sans, fontSize: 11, fontWeight: 600, color: T.inkDim, letterSpacing: "0.05em", textTransform: "uppercase" }}>Blur score</div>
+          <div style={{ fontFamily: T.mono, fontSize: 24, fontWeight: 700, color: T.ink, marginTop: 4 }}>{blur != null ? blur.toFixed(1) : "—"}</div>
         </div>
         <Tag tone={ok ? T.green : T.amber}>{blur == null ? "n/a" : ok ? "sharp" : "soft"}</Tag>
       </div>
@@ -136,8 +136,8 @@ function NotifyCard({ id }) {
           <Btn tone={T.dell} variant="ghost" disabled={!phone || busy} onClick={() => send("vapi")}>{busy === "vapi" ? "Calling…" : "Voice call"}</Btn>
         </div>
       </div>
-      {msg && <div style={{ fontFamily: T.mono, fontSize: 12, color: msg.startsWith("✓") ? T.green : T.red, marginTop: 4 }}>{msg}</div>}
-      <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkFaint, marginTop: 8 }}>Sends this inspection's result via the backend's WhatsApp / Vapi services.</div>
+      {msg && <div style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 500, color: msg.startsWith("✓") ? T.green : T.red, marginTop: 4 }}>{msg}</div>}
+      <div style={{ fontFamily: T.sans, fontSize: 12, color: T.inkDim, marginTop: 8 }}>Sends this inspection's result via the backend's WhatsApp / Vapi services.</div>
     </Panel>
   );
 }
