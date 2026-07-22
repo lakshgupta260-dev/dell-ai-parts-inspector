@@ -4,47 +4,8 @@ import { T as NIGHT, useTheme } from "../lib/auth.jsx";
 function useT() { const c = useTheme(); return c?.T || NIGHT; }
 
 /* ============================ animated background ========================= */
-export function ScanGrid({ palette } = {}) {
-  const ctxT = useT();
-  const T = palette || ctxT;
-  const LASER = T.laser;
-  const ref = useRef(null);
-  useEffect(() => {
-    const c = ref.current, ctx = c.getContext("2d");
-    let raf, t = 0, w, h, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    function size() { w = c.clientWidth; h = c.clientHeight; c.width = w * dpr; c.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
-    size(); window.addEventListener("resize", size);
-    const G = 46;
-    function frame() {
-      t += reduce ? 0 : 1;
-      ctx.clearRect(0, 0, w, h);
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},${T.gridOpacity})`;
-      ctx.beginPath();
-      for (let x = (t * 0.12) % G; x < w; x += G) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-      for (let y = 0; y < h; y += G) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
-      ctx.stroke();
-      const sweepY = (t * 1.0) % (h + 320) - 160;
-      ctx.fillStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},${T.nodeOpacity})`;
-      for (let x = 0; x < w; x += G) for (let y = 0; y < h; y += G) {
-        const d = Math.abs(y - sweepY);
-        if (d < 60) { ctx.globalAlpha = (1 - d / 60) * 0.45; ctx.fillRect(x - 1, y - 1, 2, 2); }
-      }
-      ctx.globalAlpha = 1;
-      const grd = ctx.createLinearGradient(0, sweepY - 44, 0, sweepY + 44);
-      grd.addColorStop(0, `rgba(${LASER.r},${LASER.g},${LASER.b},0)`);
-      grd.addColorStop(0.5, `rgba(${LASER.r},${LASER.g},${LASER.b},${T.beamOpacity})`);
-      grd.addColorStop(1, `rgba(${LASER.r},${LASER.g},${LASER.b},0)`);
-      ctx.fillStyle = grd; ctx.fillRect(0, sweepY - 44, w, 88);
-      ctx.strokeStyle = `rgba(${LASER.r},${LASER.g},${LASER.b},${T.lineOpacity})`;
-      ctx.beginPath(); ctx.moveTo(0, sweepY); ctx.lineTo(w, sweepY); ctx.stroke();
-      raf = requestAnimationFrame(frame);
-    }
-    frame();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", size); };
-  }, []);
-  return <canvas ref={ref} style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none" }} />;
+export function ScanGrid() {
+  return null;
 }
 
 /* -------------------------------- Logo ----------------------------------- */
@@ -73,36 +34,25 @@ export function Btn({ children, onClick, variant = "solid", tone, full, type = "
         position: "relative", fontFamily: T.mono, fontSize: size === "sm" ? 12 : 13, fontWeight: 600,
         letterSpacing: "0.06em", textTransform: "uppercase", padding: pad, cursor: disabled ? "not-allowed" : "pointer",
         border: `1px solid ${variant === "solid" ? tone : T.lineHi}`, borderRadius: 2, width: full ? "100%" : "auto",
-        color: variant === "solid" ? "#04121c" : tone, background: variant === "solid" ? tone : "transparent",
-        overflow: "hidden", transition: "all .18s ease", opacity: disabled ? 0.4 : 1,
-        boxShadow: hov && !disabled ? `0 0 0 2px ${tone}44, 0 12px 32px -8px ${tone}88` : "none",
+        color: variant === "solid" ? "#ffffff" : tone, background: variant === "solid" ? tone : "transparent",
+        overflow: "hidden", transition: "all .18s ease", opacity: disabled ? 0.5 : 1,
+        boxShadow: hov && !disabled ? `0 2px 5px rgba(0,0,0,0.15)` : "none",
         transform: hov && !disabled ? "translateY(-1px)" : "none",
       }}>
-      <Corner pos="tl" c={variant === "solid" ? "#04121c" : tone} />
-      <Corner pos="br" c={variant === "solid" ? "#04121c" : tone} />
       <span style={{ position: "relative", zIndex: 2 }}>{children}</span>
-      {variant === "solid" && hov && !disabled && (
-        <span style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent)", transform: "translateX(-100%)", animation: "sweep .7s ease" }} />
-      )}
     </button>
   );
 }
-function Corner({ pos, c }) {
-  const m = { tl: { top: 3, left: 3, borderTop: `1px solid ${c}`, borderLeft: `1px solid ${c}` },
-    br: { bottom: 3, right: 3, borderBottom: `1px solid ${c}`, borderRight: `1px solid ${c}` } }[pos];
-  return <span style={{ position: "absolute", width: 5, height: 5, opacity: 0.6, ...m }} />;
-}
+// Removed Corner function
 
 /* ------------------------------- Panel ----------------------------------- */
 export function Panel({ children, style, pad = 22, className = "" }) {
   const T = useT();
-  const glass = {
-    background: T.name === "night" ? "rgba(11, 19, 16, 0.6)" : "rgba(255, 255, 255, 0.65)",
-    backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)",
-    boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.15)",
+  const box = {
+    background: T.panel,
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)",
   };
-  return <div className={className} style={{ position: "relative", ...glass, border: `1px solid ${T.line}`, borderRadius: 8, padding: pad, ...style }}>{children}</div>;
+  return <div className={className} style={{ position: "relative", ...box, border: `1px solid ${T.line}`, borderRadius: 8, padding: pad, ...style }}>{children}</div>;
 }
 
 export function Eyebrow({ children }) {

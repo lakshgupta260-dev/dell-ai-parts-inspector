@@ -48,7 +48,7 @@ export default function NewInspection() {
     <div>
       <div style={{ marginBottom: 26 }} className="slide-up">
         <Eyebrow>New inspection</Eyebrow>
-        <h1 className="gradient-text" style={{ fontFamily: T.sans, fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em", margin: "10px 0 0", display: "inline-block" }}>Inspect a part</h1>
+        <h1 style={{ fontFamily: T.sans, fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em", color: T.ink, margin: "10px 0 0", display: "inline-block" }}>Inspect a part</h1>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", marginBottom: 30 }} className="slide-up stagger-1">
@@ -134,16 +134,15 @@ function RunningView({ progress, front }) {
     <Panel pad={40} className="slide-up stagger-1">
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "center" }}>
         
-        {/* Left Side: Scanning Image Overlay */}
-        <div style={{ position: "relative", overflow: "hidden", borderRadius: 6, border: `1px solid ${T.lineHi}`, background: "#000" }}>
+        {/* Left Side: Image Preview */}
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: 6, border: `1px solid ${T.lineHi}`, background: T.line }}>
           {preview ? (
-            <img src={preview} alt="Scanning" style={{ width: "100%", display: "block", opacity: 0.6, filter: "contrast(1.2)" }} />
+            <img src={preview} alt="Processing" style={{ width: "100%", display: "block" }} />
           ) : (
             <div style={{ width: "100%", paddingBottom: "75%" }} />
           )}
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: T.dell, boxShadow: `0 0 16px 2px ${T.dell}`, animation: "scanline 2s linear infinite" }} />
           <div style={{ position: "absolute", bottom: 12, left: 12 }}>
-            <Tag tone={T.dell}>ANALYZING</Tag>
+            <Tag tone={T.dell}>PROCESSING...</Tag>
           </div>
         </div>
 

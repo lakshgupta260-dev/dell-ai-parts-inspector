@@ -10,58 +10,56 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const NIGHT = {
   name: "night",
-  bg: "#000000",
-  bg2: "#050a08",
-  panel: "#0b1310",
-  panelHi: "#101a15",
-  line: "#1c2b23",
-  lineHi: "#2c4638",
-  ink: "#e8f4ee",
-  inkDim: "#8ba99a",
-  inkFaint: "#5c7568",
-  dell: "#3ddc84",
-  dellHi: "#5cff9d",
-  green: "#3ddc84",
-  amber: "#f5b53a",
-  red: "#ff5a52",
-  // scan-grid laser (bright green on black)
-  laser: { r: 61, g: 220, b: 132 },
-  gridOpacity: 0.10,
-  nodeOpacity: 0.9,
-  beamOpacity: 0.11,
-  lineOpacity: 0.38,
+  bg: "#111827",
+  bg2: "#1F2937",
+  panel: "#1F2937",
+  panelHi: "#374151",
+  line: "#374151",
+  lineHi: "#4B5563",
+  ink: "#F9FAFB",
+  inkDim: "#9CA3AF",
+  inkFaint: "#6B7280",
+  dell: "#3B82F6",
+  dellHi: "#60A5FA",
+  green: "#10B981",
+  amber: "#F59E0B",
+  red: "#EF4444",
+  laser: { r: 59, g: 130, b: 246 },
+  gridOpacity: 0.05,
+  nodeOpacity: 0.2,
+  beamOpacity: 0.05,
+  lineOpacity: 0.1,
   mono: "'IBM Plex Mono','JetBrains Mono',ui-monospace,monospace",
   sans: "'IBM Plex Sans','Inter',system-ui,sans-serif",
 };
 
 const DAY = {
   name: "day",
-  bg: "#f5f7f6",
-  bg2: "#eef2f0",
-  panel: "#ffffff",
-  panelHi: "#f4f8f6",
-  line: "#dbe4df",
-  lineHi: "#c2d0c9",
-  ink: "#12201a",
-  inkDim: "#486056",
-  inkFaint: "#7d938a",
-  dell: "#12a15a",        // deeper green so it reads on white
-  dellHi: "#0c7d45",
-  green: "#12a15a",
-  amber: "#c47d05",
-  red: "#d63a30",
-  // toned-down green laser on light bg
-  laser: { r: 26, g: 160, b: 92 },
-  gridOpacity: 0.14,
-  nodeOpacity: 0.5,
-  beamOpacity: 0.07,
-  lineOpacity: 0.28,
+  bg: "#F9FAFB",
+  bg2: "#F3F4F6",
+  panel: "#FFFFFF",
+  panelHi: "#F9FAFB",
+  line: "#E5E7EB",
+  lineHi: "#D1D5DB",
+  ink: "#111827",
+  inkDim: "#4B5563",
+  inkFaint: "#9CA3AF",
+  dell: "#0076CE",
+  dellHi: "#005C9E",
+  green: "#10B981",
+  amber: "#F59E0B",
+  red: "#EF4444",
+  laser: { r: 0, g: 118, b: 206 },
+  gridOpacity: 0.03,
+  nodeOpacity: 0.1,
+  beamOpacity: 0.03,
+  lineOpacity: 0.1,
   mono: "'IBM Plex Mono','JetBrains Mono',ui-monospace,monospace",
   sans: "'IBM Plex Sans','Inter',system-ui,sans-serif",
 };
 
-/* Static export kept for any legacy import; equals the default (night). */
-export const T = NIGHT;
+/* Static export kept for any legacy import; equals the default (day). */
+export const T = DAY;
 export const THEMES = { night: NIGHT, day: DAY };
 
 export const VERDICT = {
@@ -86,10 +84,10 @@ const ThemeCtx = createContext(null);
 export function useTheme() { return useContext(ThemeCtx); }
 
 export function ThemeProvider({ children }) {
-  const [mode, setMode] = useState(() => localStorage.getItem("pg_theme") || "night");
+  const [mode, setMode] = useState(() => localStorage.getItem("pg_theme") || "day");
   useEffect(() => { localStorage.setItem("pg_theme", mode); }, [mode]);
-  const toggle = () => setMode((m) => (m === "night" ? "day" : "night"));
-  const Tp = THEMES[mode] || NIGHT;
+  const toggle = () => setMode((m) => (m === "day" ? "night" : "day"));
+  const Tp = THEMES[mode] || DAY;
   return <ThemeCtx.Provider value={{ mode, setMode, toggle, T: Tp }}>{children}</ThemeCtx.Provider>;
 }
 

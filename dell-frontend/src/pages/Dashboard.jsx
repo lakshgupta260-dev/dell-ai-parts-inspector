@@ -27,7 +27,7 @@ export default function Dashboard() {
     <div>
       <div style={{ marginBottom: 24 }} className="slide-up">
         <Eyebrow>Overview</Eyebrow>
-        <h1 className="gradient-text" style={{ fontFamily: T.sans, fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", margin: "10px 0 0", display: "inline-block" }}>Inspection dashboard</h1>
+        <h1 style={{ fontFamily: T.sans, fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink, margin: "10px 0 0", display: "inline-block" }}>Inspection dashboard</h1>
       </div>
 
       {err && <div style={{ marginBottom: 20 }}><ErrorNote>{err}</ErrorNote></div>}

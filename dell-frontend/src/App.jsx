@@ -24,23 +24,13 @@ function GlobalStyles() {
         0% { opacity: 0; transform: translateY(20px); } 
         100% { opacity: 1; transform: translateY(0); } 
       }
-      @keyframes scanline {
-        0% { top: -10%; }
-        50% { top: 110%; }
-        100% { top: -10%; }
-      }
       .pulse { animation: pulse 1.2s ease-in-out infinite; }
-      .slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-      .stagger-1 { animation-delay: 0.05s; }
-      .stagger-2 { animation-delay: 0.1s; }
-      .stagger-3 { animation-delay: 0.15s; }
-      .stagger-4 { animation-delay: 0.2s; }
-      .stagger-5 { animation-delay: 0.25s; }
-      .gradient-text {
-        background: linear-gradient(135deg, #3ddc84 0%, #00f0ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
+      .slide-up { animation: slideUp 0.3s ease-out forwards; opacity: 0; }
+      .stagger-1 { animation-delay: 0.03s; }
+      .stagger-2 { animation-delay: 0.06s; }
+      .stagger-3 { animation-delay: 0.09s; }
+      .stagger-4 { animation-delay: 0.12s; }
+      .stagger-5 { animation-delay: 0.15s; }
       * { box-sizing: border-box; }
       html, body, #root { margin: 0; min-height: 100%; }
       ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -49,22 +39,18 @@ function GlobalStyles() {
   );
 }
 
-/* Login stays night-only (black + green laser), independent of the theme. */
 function LoginNight() {
   return (
-    <div style={{ minHeight: "100vh", background: NIGHT.bg, backgroundImage: `radial-gradient(circle at 50% -8%, ${NIGHT.bg2}, ${NIGHT.bg})`, fontFamily: NIGHT.sans, color: NIGHT.ink }}>
-      <ScanGrid palette={NIGHT} />
+    <div style={{ minHeight: "100vh", background: NIGHT.bg, fontFamily: NIGHT.sans, color: NIGHT.ink }}>
       <Login />
     </div>
   );
 }
 
-/* Authenticated area — theme-aware background + ScanGrid. */
 function AppLayout() {
   const { T } = useTheme();
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, backgroundImage: `radial-gradient(circle at 50% -8%, ${T.bg2}, ${T.bg})`, fontFamily: T.sans, color: T.ink, transition: "background-color .35s ease, color .35s ease" }}>
-      <ScanGrid />
+    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.sans, color: T.ink, transition: "background-color .35s ease, color .35s ease" }}>
       <Protected><Shell /></Protected>
     </div>
   );
