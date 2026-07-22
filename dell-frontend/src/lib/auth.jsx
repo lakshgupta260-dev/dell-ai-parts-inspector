@@ -29,8 +29,8 @@ const NIGHT = {
   nodeOpacity: 0.2,
   beamOpacity: 0.05,
   lineOpacity: 0.1,
-  mono: "'IBM Plex Mono','JetBrains Mono',ui-monospace,monospace",
-  sans: "'IBM Plex Sans','Inter',system-ui,sans-serif",
+  mono: "'JetBrains Mono', 'Fira Code', 'IBM Plex Mono', ui-monospace, monospace",
+  sans: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
 };
 
 const DAY = {
@@ -54,8 +54,8 @@ const DAY = {
   nodeOpacity: 0.1,
   beamOpacity: 0.03,
   lineOpacity: 0.1,
-  mono: "'IBM Plex Mono','JetBrains Mono',ui-monospace,monospace",
-  sans: "'IBM Plex Sans','Inter',system-ui,sans-serif",
+  mono: "'JetBrains Mono', 'Fira Code', 'IBM Plex Mono', ui-monospace, monospace",
+  sans: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
 };
 
 /* Static export kept for any legacy import; equals the default (day). */
