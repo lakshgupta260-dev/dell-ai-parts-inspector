@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate, Outlet } from "react-router-dom";
 import { useAuth, useTheme } from "../lib/auth.jsx";
-import { Logo, Btn } from "./ui.jsx";
+import { Logo, Btn, ThemeToggle } from "./ui.jsx";
 
 export default function Shell() {
   const { user, signOut } = useAuth();
@@ -52,20 +52,4 @@ export default function Shell() {
   );
 }
 
-/* Day/Night toggle — sliding switch with sun / moon glyphs. Night is default. */
-function ThemeToggle({ T, mode, toggle }) {
-  const isDay = mode === "day";
-  return (
-    <button onClick={toggle} title={isDay ? "Switch to night" : "Switch to day"}
-      style={{ position: "relative", width: 58, height: 28, borderRadius: 20, cursor: "pointer",
-        border: `1px solid ${T.lineHi}`, background: isDay ? "#dfe7e2" : "#05100b",
-        transition: "background .3s, border-color .3s", padding: 0, flexShrink: 0 }}>
-      <span style={{ position: "absolute", left: 7, top: "50%", transform: "translateY(-50%)", fontSize: 12, opacity: isDay ? 0.9 : 0.3, transition: "opacity .3s" }}>☀</span>
-      <span style={{ position: "absolute", right: 7, top: "50%", transform: "translateY(-50%)", fontSize: 11, opacity: isDay ? 0.25 : 0.9, transition: "opacity .3s" }}>☾</span>
-      <span style={{ position: "absolute", top: 2, left: isDay ? 32 : 2, width: 22, height: 22, borderRadius: "50%",
-        background: isDay ? "#c47d05" : T.dell,
-        boxShadow: isDay ? "0 0 10px #c47d0588" : `0 0 10px ${T.dell}aa`,
-        transition: "left .28s cubic-bezier(.4,1.3,.5,1), background .3s" }} />
-    </button>
-  );
-}
+
