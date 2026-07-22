@@ -94,21 +94,21 @@ def send_whatsapp_notification(
                     {
                         "type": "reply",
                         "reply": {
-                            "id": f"view_{inspection_id[:8]}",
+                            "id": f"view_{inspection_id}",
                             "title": "View Report"
                         }
                     },
                     {
                         "type": "reply",
                         "reply": {
-                            "id": f"call_{inspection_id[:8]}",
+                            "id": f"call_{inspection_id}",
                             "title": "Call AI Assistant"
                         }
                     },
                     {
                         "type": "reply",
                         "reply": {
-                            "id": f"esc_{inspection_id[:8]}",
+                            "id": f"esc_{inspection_id}",
                             "title": "Escalate"
                         }
                     }

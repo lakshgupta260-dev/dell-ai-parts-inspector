@@ -45,6 +45,7 @@ class Settings:
     # ── WhatsApp Cloud API ────────────────────────────────────────────────────
     WHATSAPP_TOKEN: str = os.getenv("WHATSAPP_TOKEN", "")
     WHATSAPP_PHONE_ID: str = os.getenv("WHATSAPP_PHONE_ID", "")
+    WHATSAPP_VERIFY_TOKEN: str = os.getenv("WHATSAPP_VERIFY_TOKEN", "dell-partvision-webhook")
 
     # ── Vapi ──────────────────────────────────────────────────────────────────
     VAPI_API_KEY: str = os.getenv("VAPI_API_KEY", "")

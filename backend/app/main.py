@@ -24,6 +24,7 @@ from app.api import pipeline as pipeline_router
 from app.api import report as report_router
 from app.api import upload as upload_router
 from app.api import vision as vision_router
+from app.api import webhook as webhook_router
 from app.core.config import settings
 from app.core.database import init_db
 
@@ -69,6 +70,7 @@ app.include_router(report_router.router)
 app.include_router(notifications_router.router)
 app.include_router(history_router.router)
 app.include_router(pipeline_router.router)
+app.include_router(webhook_router.router)
 
 
 # ── Health check (preserved from initial skeleton) ────────────────────────────
