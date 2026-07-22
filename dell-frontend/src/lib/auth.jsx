@@ -35,15 +35,15 @@ const NIGHT = {
 
 const DAY = {
   name: "day",
-  bg: "#F8FAFC",
-  bg2: "#F1F5F9",
-  panel: "#FFFFFF",
+  bg: "#F0F4F8", // Cool, deeper grey-blue background
+  bg2: "#E1E8F0",
+  panel: "#FFFFFF", // Crisp white panels contrast against the bg
   panelHi: "#F8FAFC",
-  line: "#E2E8F0",
-  lineHi: "#CBD5E1",
-  ink: "#0F172A",
-  inkDim: "#475569",
-  inkFaint: "#64748B",
+  line: "#D1DBE5", // Stronger borders for definition
+  lineHi: "#A3B6C9",
+  ink: "#0A2540", // Deep navy blue text for a professional look
+  inkDim: "#425466",
+  inkFaint: "#7A8C9E",
   dell: "#0076CE",
   dellHi: "#005C9E",
   green: "#10B981",
