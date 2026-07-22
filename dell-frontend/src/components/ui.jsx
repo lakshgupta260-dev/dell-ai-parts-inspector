@@ -75,7 +75,7 @@ export function Btn({ children, onClick, variant = "solid", tone, full, type = "
         border: `1px solid ${variant === "solid" ? tone : T.lineHi}`, borderRadius: 2, width: full ? "100%" : "auto",
         color: variant === "solid" ? "#04121c" : tone, background: variant === "solid" ? tone : "transparent",
         overflow: "hidden", transition: "all .18s ease", opacity: disabled ? 0.4 : 1,
-        boxShadow: hov && !disabled ? `0 0 0 1px ${tone}, 0 8px 24px -8px ${tone}66` : "none",
+        boxShadow: hov && !disabled ? `0 0 0 2px ${tone}44, 0 12px 32px -8px ${tone}88` : "none",
         transform: hov && !disabled ? "translateY(-1px)" : "none",
       }}>
       <Corner pos="tl" c={variant === "solid" ? "#04121c" : tone} />
@@ -94,9 +94,15 @@ function Corner({ pos, c }) {
 }
 
 /* ------------------------------- Panel ----------------------------------- */
-export function Panel({ children, style, pad = 22 }) {
+export function Panel({ children, style, pad = 22, className = "" }) {
   const T = useT();
-  return <div style={{ position: "relative", background: T.panel, border: `1px solid ${T.line}`, borderRadius: 3, padding: pad, ...style }}>{children}</div>;
+  const glass = {
+    background: T.name === "night" ? "rgba(11, 19, 16, 0.6)" : "rgba(255, 255, 255, 0.65)",
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
+    boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.15)",
+  };
+  return <div className={className} style={{ position: "relative", ...glass, border: `1px solid ${T.line}`, borderRadius: 8, padding: pad, ...style }}>{children}</div>;
 }
 
 export function Eyebrow({ children }) {

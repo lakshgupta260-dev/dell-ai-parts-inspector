@@ -25,21 +25,21 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 24 }} className="slide-up">
         <Eyebrow>Overview</Eyebrow>
-        <h1 style={{ fontFamily: T.sans, fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink, margin: "10px 0 0" }}>Inspection dashboard</h1>
+        <h1 className="gradient-text" style={{ fontFamily: T.sans, fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", margin: "10px 0 0", display: "inline-block" }}>Inspection dashboard</h1>
       </div>
 
       {err && <div style={{ marginBottom: 20 }}><ErrorNote>{err}</ErrorNote></div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14, marginBottom: 22 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14, marginBottom: 22 }} className="slide-up stagger-1">
         <StatCard label="Total inspected" value={analytics?.total_inspections ?? 0} tone={T.ink} />
         <StatCard label="Authentic" value={analytics?.authentic_count ?? 0} tone={T.green} />
         <StatCard label="Suspicious" value={analytics?.suspicious_count ?? 0} tone={T.amber} />
         <StatCard label="Counterfeit" value={analytics?.counterfeit_count ?? 0} tone={T.red} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }} className="slide-up stagger-2">
         <Panel>
           <Eyebrow>Pass rate</Eyebrow>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 14 }}>
@@ -64,7 +64,7 @@ export default function Dashboard() {
         </Panel>
       </div>
 
-      <Panel pad={0}>
+      <Panel pad={0} className="slide-up stagger-3">
         <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Eyebrow>Recent inspections</Eyebrow>
           <button onClick={() => nav("/history")} style={{ fontFamily: T.mono, fontSize: 11, color: T.dellHi, background: "none", border: "none", cursor: "pointer" }}>view all →</button>

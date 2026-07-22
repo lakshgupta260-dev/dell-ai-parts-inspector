@@ -20,7 +20,27 @@ function GlobalStyles() {
       @keyframes spin { to { transform: rotate(360deg); } }
       @keyframes sweep { to { transform: translateX(100%); } }
       @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+      @keyframes slideUp { 
+        0% { opacity: 0; transform: translateY(20px); } 
+        100% { opacity: 1; transform: translateY(0); } 
+      }
+      @keyframes scanline {
+        0% { top: -10%; }
+        50% { top: 110%; }
+        100% { top: -10%; }
+      }
       .pulse { animation: pulse 1.2s ease-in-out infinite; }
+      .slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+      .stagger-1 { animation-delay: 0.05s; }
+      .stagger-2 { animation-delay: 0.1s; }
+      .stagger-3 { animation-delay: 0.15s; }
+      .stagger-4 { animation-delay: 0.2s; }
+      .stagger-5 { animation-delay: 0.25s; }
+      .gradient-text {
+        background: linear-gradient(135deg, #3ddc84 0%, #00f0ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
       * { box-sizing: border-box; }
       html, body, #root { margin: 0; min-height: 100%; }
       ::-webkit-scrollbar { width: 10px; height: 10px; }

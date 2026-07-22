@@ -32,7 +32,7 @@ export default function InspectionDetail() {
   return (
     <div>
       <BackLink nav={nav} />
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16, marginBottom: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16, marginBottom: 24 }} className="slide-up">
         <div>
           <Eyebrow>Inspection report</Eyebrow>
           <h1 style={{ fontFamily: T.mono, fontSize: 20, fontWeight: 600, color: T.ink, margin: "10px 0 0", letterSpacing: "0.01em", wordBreak: "break-all" }}>{r.inspection_id}</h1>
@@ -43,7 +43,7 @@ export default function InspectionDetail() {
       </div>
 
       {/* verdict banner */}
-      <Panel style={{ borderLeft: `4px solid ${v.tone}`, marginBottom: 16 }}>
+      <Panel style={{ borderLeft: `4px solid ${v.tone}`, marginBottom: 16 }} className="slide-up stagger-1">
         <div style={{ display: "flex", gap: 26, alignItems: "center", flexWrap: "wrap" }}>
           <ScoreDial score={r.fraud_score} tone={scoreTone(r.fraud_score, T)} />
           <div style={{ flex: 1, minWidth: 220 }}>
@@ -57,7 +57,7 @@ export default function InspectionDetail() {
       </Panel>
 
       {/* meta grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 1, background: T.line, border: `1px solid ${T.line}`, borderRadius: 3, overflow: "hidden", marginBottom: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 1, background: T.line, border: `1px solid ${T.line}`, borderRadius: 3, overflow: "hidden", marginBottom: 16 }} className="slide-up stagger-2">
         {meta.map(([k, val]) => (
           <div key={k} style={{ background: T.panel, padding: "14px 16px" }}>
             <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T.inkFaint }}>{k}</div>
@@ -68,19 +68,21 @@ export default function InspectionDetail() {
 
       {/* AI reasoning */}
       {r.final_reasoning && (
-        <Panel style={{ marginBottom: 16 }}>
+        <Panel style={{ marginBottom: 16 }} className="slide-up stagger-3">
           <Eyebrow>AI reasoning</Eyebrow>
           <p style={{ fontFamily: T.mono, fontSize: 13, color: T.inkDim, lineHeight: 1.7, marginTop: 14, marginBottom: 0, whiteSpace: "pre-wrap" }}>{r.final_reasoning}</p>
         </Panel>
       )}
 
       {/* image quality */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }} className="slide-up stagger-4">
         <QualityCard label="Front image" blur={r.front_blur_score} />
         <QualityCard label="Back image" blur={r.back_blur_score} />
       </div>
 
-      <NotifyCard id={r.inspection_id} />
+      <div className="slide-up stagger-5">
+        <NotifyCard id={r.inspection_id} />
+      </div>
     </div>
   );
 }
