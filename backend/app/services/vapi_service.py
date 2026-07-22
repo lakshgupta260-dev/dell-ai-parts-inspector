@@ -62,14 +62,11 @@ def send_vapi_call(inspection_id: str, phone_number: str) -> NotificationResult:
     service_tag = ocr.combined_dell_fields.service_tag or "unknown"
     model_name = ocr.combined_dell_fields.model_name or "unknown"
 
+    # 1. A much more natural opening greeting
     spoken_script = (
-        f"Hello. This is the Dell PartVision AI automated alert system. "
-        f"Inspection {inspection_id[:8]} for model {model_name}, "
-        f"service tag {' '.join(list(service_tag))} has been completed. "
-        f"The fraud score is {ai.fraud_score} out of 100. "
-        f"The verdict is {ai.verdict}. "
-        f"{ai.final_reasoning} "
-        f"Please log in to the dashboard to view the full report. Thank you."
+        f"Hello! This is the Dell PartVision AI alert system. "
+        f"The inspection for model {model_name} has finished with a fraud score of {ai.fraud_score} out of 100. "
+        f"The final verdict is {ai.verdict}. Would you like me to explain the reasoning for this?"
     )
 
     payload = {
@@ -85,9 +82,20 @@ def send_vapi_call(inspection_id: str, phone_number: str) -> NotificationResult:
                     {
                         "role": "system",
                         "content": (
-                            "You are a Dell hardware inspection assistant. "
-                            "Read the inspection summary to the caller clearly and professionally. "
-                            "Answer any follow-up questions they have about the inspection."
+                            "You are a friendly, human-like Dell hardware inspection assistant calling a technician. "
+                            "You have the following technical details about an inspection:\n"
+                            f"- Inspection ID: {inspection_id[:8]}\n"
+                            f"- Model: {model_name}\n"
+                            f"- Service Tag: {service_tag}\n"
+                            f"- Fraud Score: {ai.fraud_score}/100\n"
+                            f"- Verdict: {ai.verdict}\n"
+                            f"- Raw Technical Reasoning: {ai.final_reasoning}\n\n"
+                            "INSTRUCTIONS:\n"
+                            "1. The user was just told the verdict and asked if they want the reasoning.\n"
+                            "2. If they say yes, DO NOT read the 'Raw Technical Reasoning' verbatim.\n"
+                            "3. Translate the raw technical reasoning into conversational, easy-to-understand spoken English. "
+                            "Make it sound natural, like a human explaining it over the phone.\n"
+                            "4. Answer any follow-up questions they have."
                         ),
                     }
                 ],
