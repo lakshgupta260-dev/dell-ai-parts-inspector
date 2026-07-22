@@ -26,18 +26,20 @@ export function Btn({ children, onClick, variant = "solid", tone, full, type = "
   const T = useT();
   if (tone == null) tone = T.dell;
   const [hov, setHov] = useState(false);
+  const [act, setAct] = useState(false);
   const pad = size === "lg" ? "14px 26px" : size === "sm" ? "7px 14px" : "11px 20px";
   return (
     <button type={type} onClick={onClick} disabled={disabled}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => { setHov(false); setAct(false); }}
+      onMouseDown={() => setAct(true)} onMouseUp={() => setAct(false)}
       style={{
         position: "relative", fontFamily: T.sans, fontSize: size === "sm" ? 13 : 14, fontWeight: 600,
         letterSpacing: "0.02em", padding: pad, cursor: disabled ? "not-allowed" : "pointer",
         border: `1px solid ${variant === "solid" ? tone : T.lineHi}`, borderRadius: 2, width: full ? "100%" : "auto",
         color: variant === "solid" ? "#ffffff" : tone, background: variant === "solid" ? tone : "transparent",
-        overflow: "hidden", transition: "all .18s ease", opacity: disabled ? 0.5 : 1,
-        boxShadow: hov && !disabled ? `0 2px 5px rgba(0,0,0,0.15)` : "none",
-        transform: hov && !disabled ? "translateY(-1px)" : "none",
+        overflow: "hidden", transition: "all .18s cubic-bezier(0.4, 0, 0.2, 1)", opacity: disabled ? 0.5 : 1,
+        boxShadow: hov && !disabled ? (variant === "solid" ? `0 6px 16px ${tone}44` : `0 4px 12px rgba(0,0,0,0.1)`) : "none",
+        transform: act && !disabled ? "scale(0.96)" : hov && !disabled ? "translateY(-2px)" : "none",
       }}>
       <span style={{ position: "relative", zIndex: 2 }}>{children}</span>
     </button>
@@ -50,9 +52,9 @@ export function Panel({ children, style, pad = 22, className = "" }) {
   const T = useT();
   const box = {
     background: T.panel,
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)",
+    boxShadow: T.name === "day" ? "0 4px 24px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.03)" : "0 4px 24px rgba(0, 0, 0, 0.2)",
   };
-  return <div className={className} style={{ position: "relative", ...box, border: `1px solid ${T.line}`, borderRadius: 8, padding: pad, ...style }}>{children}</div>;
+  return <div className={className} style={{ position: "relative", ...box, border: `1px solid ${T.line}`, borderRadius: 8, padding: pad, transition: "box-shadow 0.2s ease", ...style }}>{children}</div>;
 }
 
 export function Eyebrow({ children }) {
