@@ -72,6 +72,18 @@ app.include_router(history_router.router)
 app.include_router(pipeline_router.router)
 app.include_router(webhook_router.router)
 
+# ── Meta Webhook Fallback ─────────────────────────────────────────────────────
+# Meta sometimes strips the path and hits /webhook directly. This catches it.
+from fastapi import Request, BackgroundTasks
+from app.api.webhook import verify_whatsapp_webhook, receive_whatsapp_webhook
+
+@app.get("/webhook", include_in_schema=False)
+async def fallback_verify(request: Request):
+    return await verify_whatsapp_webhook(request)
+
+@app.post("/webhook", include_in_schema=False)
+async def fallback_receive(request: Request, background_tasks: BackgroundTasks):
+    return await receive_whatsapp_webhook(request, background_tasks)
 
 # ── Health check (preserved from initial skeleton) ────────────────────────────
 @app.get("/", tags=["Health"])
