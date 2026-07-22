@@ -80,7 +80,9 @@ async def receive_whatsapp_webhook(
                                 inspection_id = button_id.replace("view_", "")
                                 logger.info(f"QA Manager requested to view report for inspection: {inspection_id}")
                                 from app.services.whatsapp_service import send_whatsapp_text
-                                msg = f"📄 View the full detailed report and high-res images here:\nhttp://localhost:5173/inspection/{inspection_id}"
+                                base_url = str(request.base_url).rstrip("/")
+                                pdf_url = f"{base_url}/api/v1/report/download/{inspection_id}"
+                                msg = f"📄 View the full detailed PDF report here:\n{pdf_url}"
                                 background_tasks.add_task(send_whatsapp_text, sender_phone, msg)
                                 
                             elif button_id.startswith("esc_"):
