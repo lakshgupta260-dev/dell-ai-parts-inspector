@@ -12,15 +12,15 @@ export default function Login() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Hardcoded colors for the HackBridge landing page aesthetic
+  // Unique "Dell Corporate Modern" aesthetic
   const C = {
-    navy: "#0B1A2F",
-    sand: "#E5D5C0",
+    navy: "#0A0F1C", // Deep space slate instead of navy
+    sand: "#0076CE", // Dell Blue accent instead of sand
     white: "#FFFFFF",
     slate: "#94A3B8",
-    cardBg: "#F8F6F0",
-    inputBg: "#FFFFFF",
-    line: "#D5CFC1",
+    cardBg: "#FFFFFF", // Pure white crisp card
+    inputBg: "#F8FAFC",
+    line: "#E2E8F0",
     textDark: "#0F172A",
     textFaint: "#64748B",
     sans: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
@@ -84,7 +84,7 @@ export default function Login() {
           <div style={{ background: C.cardBg, borderRadius: 12, padding: 40, boxShadow: "0 25px 50px rgba(0,0,0,0.3)" }}>
             
             {/* Tabs */}
-            <div style={{ display: "flex", gap: 4, marginBottom: 28, background: "#EAE5D9", padding: 6, borderRadius: 8 }}>
+            <div style={{ display: "flex", gap: 4, marginBottom: 28, background: "#F1F5F9", padding: 6, borderRadius: 8 }}>
               {["login", "register"].map((m) => (
                 <button key={m} onClick={() => { setMode(m); setErr(""); }}
                   style={{ flex: 1, padding: "12px", fontFamily: C.sans, fontSize: 13, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", border: "none", borderRadius: 6, background: mode === m ? C.navy : "transparent", color: mode === m ? C.white : C.textFaint, transition: "all .2s ease" }}>
@@ -117,7 +117,7 @@ export default function Login() {
                   <div style={{ display: "flex", gap: 8 }}>
                     {[["INSPECTOR", "Inspector"], ["QA_MANAGER", "QA Manager"]].map(([v, label]) => (
                       <button type="button" key={v} onClick={() => set("role", v)}
-                        style={{ flex: 1, padding: "12px", fontFamily: C.sans, fontSize: 14, fontWeight: 600, cursor: "pointer", borderRadius: 6, border: `1px solid ${form.role === v ? C.navy : C.line}`, background: form.role === v ? "rgba(11,26,47,0.05)" : C.white, color: form.role === v ? C.navy : C.textFaint, transition: "all .2s" }}>{label}</button>
+                        style={{ flex: 1, padding: "12px", fontFamily: C.sans, fontSize: 14, fontWeight: 600, cursor: "pointer", borderRadius: 6, border: `1px solid ${form.role === v ? C.sand : C.line}`, background: form.role === v ? "rgba(0,118,206,0.05)" : C.white, color: form.role === v ? C.sand : C.textFaint, transition: "all .2s" }}>{label}</button>
                     ))}
                   </div>
                 </div>
