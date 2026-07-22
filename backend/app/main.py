@@ -56,7 +56,7 @@ app.add_middleware(
 def on_startup() -> None:
     """Create all SQLAlchemy tables on server startup."""
     init_db()
-    logger.info("Dell AI Parts Inspector API started successfully.")
+    logger.info("Dell PartVision AI API started successfully.")
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth_router.router)
@@ -75,4 +75,4 @@ app.include_router(pipeline_router.router)
 @app.get("/", tags=["Health"])
 def root() -> dict:
     """Return a simple liveness signal."""
-    return {"message": "Dell AI Parts Inspector Backend is Running 🚀"}
+    return {"message": "Dell PartVision AI Backend is Running 🚀"}

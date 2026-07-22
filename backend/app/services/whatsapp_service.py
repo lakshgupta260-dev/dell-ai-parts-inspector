@@ -70,7 +70,7 @@ def send_whatsapp_notification(
     )
 
     message_body = (
-        f"🔍 *Dell AI Parts Inspector Report*\n\n"
+        f"🔍 *Dell PartVision AI Report*\n\n"
         f"Inspection ID: `{inspection_id[:8]}...`\n"
         f"Model: {model_name}\n"
         f"Service Tag: {service_tag}\n"

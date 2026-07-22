@@ -30,7 +30,7 @@ export default function Login() {
       <div style={{ width: "min(430px,100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, justifyContent: "center" }}>
           <Logo size={30} />
-          <span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 25, letterSpacing: "-0.02em", color: T.ink }}>Dell Parts Inspector</span>
+          <span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 25, letterSpacing: "-0.02em", color: T.ink }}>Dell PartVision AI</span>
         </div>
         <div style={{ textAlign: "center", fontFamily: T.mono, fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: T.inkFaint, marginBottom: 32 }}>
           AI Fraud Detection Console

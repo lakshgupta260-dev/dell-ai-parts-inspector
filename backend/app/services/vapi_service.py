@@ -63,7 +63,7 @@ def send_vapi_call(inspection_id: str, phone_number: str) -> NotificationResult:
     model_name = ocr.combined_dell_fields.model_name or "unknown"
 
     spoken_script = (
-        f"Hello. This is the Dell AI Parts Inspector automated alert system. "
+        f"Hello. This is the Dell PartVision AI automated alert system. "
         f"Inspection {inspection_id[:8]} for model {model_name}, "
         f"service tag {' '.join(list(service_tag))} has been completed. "
         f"The fraud score is {ai.fraud_score} out of 100. "
