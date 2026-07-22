@@ -32,6 +32,8 @@ from app.utils.results_store import (
 )
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
+from fastapi import Header
+from app.core.auth import decode_token
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/pipeline", tags=["Pipeline"])
@@ -72,6 +74,7 @@ from fastapi.responses import StreamingResponse
 async def run_pipeline(
     inspection_id: str = Path(..., description="UUID from the Upload endpoint."),
     db: Session = Depends(get_db),
+    authorization: str = Header(None),
 ):
     """Execute the full 5-stage inspection pipeline using SSE."""
     try:
@@ -79,7 +82,16 @@ async def run_pipeline(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid UUID.")
 
-    logger.info("Full pipeline started for inspection %s", inspection_id)
+    inspector_username = None
+    if authorization and authorization.startswith("Bearer "):
+        try:
+            token = authorization.split(" ")[1]
+            payload = decode_token(token)
+            inspector_username = payload.get("sub")
+        except Exception:
+            pass
+
+    logger.info("Full pipeline started for inspection %s by %s", inspection_id, inspector_username)
 
     async def event_generator():
         # Start event
@@ -124,6 +136,7 @@ async def run_pipeline(
         if vision:
             create_or_update_inspection(
                 db, inspection_id,
+                inspector_username=inspector_username,
                 front_blur_score=vision.front.quality.blur_score,
                 back_blur_score=vision.back.quality.blur_score,
                 overall_quality_ok=int(vision.overall_quality_ok),
@@ -133,10 +146,11 @@ async def run_pipeline(
             f = ocr.combined_dell_fields
             create_or_update_inspection(
                 db, inspection_id,
-                service_tag=f.service_tag,
-                part_number=f.part_number,
-                model_name=f.model_name,
-                express_service_code=f.express_service_code,
+                inspector_username=inspector_username,
+                service_tag=f.service_tag or "Not Found",
+                part_number=f.part_number or "Not Found",
+                model_name=f.model_name or "Not Found",
+                express_service_code=f.express_service_code or "Not Found",
                 pipeline_status="ocr_complete",
             )
             
