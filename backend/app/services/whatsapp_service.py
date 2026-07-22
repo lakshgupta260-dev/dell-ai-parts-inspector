@@ -83,8 +83,38 @@ def send_whatsapp_notification(
     payload = {
         "messaging_product": "whatsapp",
         "to": phone_number.replace(" ", "").replace("-", ""),
-        "type": "text",
-        "text": {"body": message_body},
+        "type": "interactive",
+        "interactive": {
+            "type": "button",
+            "body": {
+                "text": message_body
+            },
+            "action": {
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": f"view_{inspection_id[:8]}",
+                            "title": "View Report"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": f"call_{inspection_id[:8]}",
+                            "title": "Call AI Assistant"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": f"esc_{inspection_id[:8]}",
+                            "title": "Escalate"
+                        }
+                    }
+                ]
+            }
+        }
     }
 
     try:
