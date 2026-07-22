@@ -77,11 +77,17 @@ async def receive_whatsapp_webhook(
                                 background_tasks.add_task(send_vapi_call, inspection_id, formatted_phone)
                                 
                             elif button_id.startswith("view_"):
-                                logger.info(f"QA Manager requested to view report for inspection: {button_id}")
-                                # Future enhancement: Send the report PDF or a direct dashboard link via WhatsApp
+                                inspection_id = button_id.replace("view_", "")
+                                logger.info(f"QA Manager requested to view report for inspection: {inspection_id}")
+                                from app.services.whatsapp_service import send_whatsapp_text
+                                msg = f"📄 View the full detailed report and high-res images here:\nhttp://localhost:5173/inspection/{inspection_id}"
+                                background_tasks.add_task(send_whatsapp_text, sender_phone, msg)
                                 
                             elif button_id.startswith("esc_"):
-                                logger.info(f"QA Manager escalated inspection: {button_id}")
-                                # Future enhancement: Mark in database as escalated and notify higher tier
+                                inspection_id = button_id.replace("esc_", "")
+                                logger.info(f"QA Manager escalated inspection: {inspection_id}")
+                                from app.services.whatsapp_service import send_whatsapp_text
+                                msg = f"🚨 Inspection {inspection_id[:8]} has been ESCALATED.\n\nA senior QA Manager has been notified and the part has been flagged in the database."
+                                background_tasks.add_task(send_whatsapp_text, sender_phone, msg)
 
     return {"status": "ok"}

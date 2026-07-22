@@ -148,3 +148,28 @@ def send_whatsapp_notification(
             success=False,
             error=str(exc),
         )
+
+def send_whatsapp_text(phone_number: str, message: str) -> None:
+    """Send a simple text message via WhatsApp."""
+    if not settings.WHATSAPP_TOKEN or not settings.WHATSAPP_PHONE_ID:
+        return
+    url = _WHATSAPP_API_URL.format(phone_id=settings.WHATSAPP_PHONE_ID)
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": phone_number.replace(" ", "").replace("-", "").replace("+", ""),
+        "type": "text",
+        "text": {"body": message}
+    }
+    try:
+        requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {settings.WHATSAPP_TOKEN}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=10,
+        )
+        logger.info("WhatsApp text response sent to %s", phone_number)
+    except requests.RequestException:
+        logger.exception("WhatsApp API error sending text to %s", phone_number)
