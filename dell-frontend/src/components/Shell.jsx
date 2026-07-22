@@ -16,8 +16,8 @@ export default function Shell() {
   });
 
   return (
-    <div style={{ position: "relative", zIndex: 2, minHeight: "100vh" }}>
-      <header style={{ position: "sticky", top: 0, zIndex: 10, background: mode === "night" ? "rgba(0,0,0,0.72)" : "rgba(245,247,246,0.82)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${T.line}`, transition: "background-color .35s, border-color .35s" }}>
+    <div style={{ position: "relative", zIndex: 2, minHeight: "100vh", background: T.bg, color: T.ink, transition: "background-color .3s, color .3s" }}>
+      <header style={{ position: "sticky", top: 0, zIndex: 10, background: mode === "night" ? "rgba(10,15,28,0.72)" : "rgba(255,255,255,0.82)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${T.line}`, transition: "background-color .35s, border-color .35s" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 62, display: "flex", alignItems: "center", gap: 28 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => nav("/")}>
             <Logo /><span style={{ fontFamily: T.sans, fontWeight: 700, fontSize: 17, letterSpacing: "-0.01em", color: T.ink }}>Dell PartVision AI</span>
