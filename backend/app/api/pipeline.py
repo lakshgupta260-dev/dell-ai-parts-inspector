@@ -56,27 +56,24 @@ class PipelineResult(BaseModel):
     status: str = "pipeline_complete"
 
 
+import asyncio
+import json
+from fastapi.responses import StreamingResponse
+
 @router.post(
     "/run/{inspection_id}",
-    response_model=PipelineResult,
-    status_code=status.HTTP_200_OK,
-    summary="Run the full inspection pipeline",
+    summary="Run the full inspection pipeline (SSE)",
     description=(
-        "Chains all 5 pipeline stages in sequence for the given inspection:\n\n"
-        "1. **Vision** — OpenCV image quality + label detection\n"
-        "2. **OCR** — PaddleOCR text extraction + Dell field parsing\n"
-        "3. **Comparison** — Rules-based field validation\n"
-        "4. **AI** — LangGraph + GPT-4.1 reasoning + fraud score\n"
-        "5. **PDF** — ReportLab inspection report generation\n\n"
-        "Results from each stage are persisted as JSON and in the inspection history DB. "
-        "Only the Upload endpoint needs to be called first."
+        "Chains all 5 pipeline stages in sequence for the given inspection, "
+        "streaming progress back via Server-Sent Events (SSE). "
+        "Vision and OCR are run concurrently to save time."
     ),
 )
-def run_pipeline(
+async def run_pipeline(
     inspection_id: str = Path(..., description="UUID from the Upload endpoint."),
     db: Session = Depends(get_db),
-) -> PipelineResult:
-    """Execute the full 5-stage inspection pipeline."""
+):
+    """Execute the full 5-stage inspection pipeline using SSE."""
     try:
         uuid.UUID(inspection_id)
     except ValueError:
@@ -84,101 +81,136 @@ def run_pipeline(
 
     logger.info("Full pipeline started for inspection %s", inspection_id)
 
-    # ── Stage 1: Vision ───────────────────────────────────────────────────────
-    try:
-        vision: VisionResult = analyze_inspection(inspection_id)
-        save_result(inspection_id, STAGE_VISION, vision)
-        create_or_update_inspection(
-            db, inspection_id,
-            front_blur_score=vision.front.quality.blur_score,
-            back_blur_score=vision.back.quality.blur_score,
-            overall_quality_ok=int(vision.overall_quality_ok),
-            pipeline_status="vision_complete",
-        )
-        vision_status = "ok"
-    except Exception as exc:
-        logger.exception("Vision stage failed for %s", inspection_id)
-        vision_status = f"error: {exc}"
-
-    # ── Stage 2: OCR ──────────────────────────────────────────────────────────
-    try:
-        ocr: OCRResult = extract_text(inspection_id)
-        save_result(inspection_id, STAGE_OCR, ocr)
-        f = ocr.combined_dell_fields
-        create_or_update_inspection(
-            db, inspection_id,
-            service_tag=f.service_tag,
-            part_number=f.part_number,
-            model_name=f.model_name,
-            express_service_code=f.express_service_code,
-            pipeline_status="ocr_complete",
-        )
-        ocr_status = "ok"
-    except Exception as exc:
-        logger.exception("OCR stage failed for %s", inspection_id)
-        ocr_status = f"error: {exc}"
+    async def event_generator():
+        # Start event
+        yield f"data: {json.dumps({'stage': 'started'})}\\n\\n"
+        
+        vision = None
+        ocr = None
+        comparison = None
+        ai = None
+        report = None
+        
+        vision_status = "pending"
+        ocr_status = "pending"
+        comparison_status = "pending"
+        ai_status = "pending"
+        report_status = "pending"
         f = None
 
-    # ── Stage 3: Comparison ───────────────────────────────────────────────────
-    try:
-        comparison: ComparisonResult = run_comparison(inspection_id)
-        create_or_update_inspection(
-            db, inspection_id,
-            comparison_risk_score=comparison.total_risk_score,
-            pipeline_status="comparison_complete",
-        )
-        comparison_status = "ok"
-    except Exception as exc:
-        logger.exception("Comparison stage failed for %s", inspection_id)
-        comparison_status = f"error: {exc}"
+        # ── Stage 1 & 2: Vision and OCR (Concurrent) ─────────────────────────
+        async def run_vision():
+            try:
+                v = await asyncio.to_thread(analyze_inspection, inspection_id)
+                await asyncio.to_thread(save_result, inspection_id, STAGE_VISION, v)
+                return "ok", v
+            except Exception as e:
+                logger.exception("Vision stage failed")
+                return f"error: {e}", None
 
-    # ── Stage 4: AI Reasoning ─────────────────────────────────────────────────
-    try:
-        ai: AIAnalysisResult = run_ai_analysis(inspection_id)
-        create_or_update_inspection(
-            db, inspection_id,
-            fraud_score=ai.fraud_score,
-            verdict=ai.verdict,
-            confidence_level=ai.confidence_level,
-            ai_model_used=ai.ai_model_used,
-            final_reasoning=ai.final_reasoning,
-            pipeline_status="ai_complete",
-        )
-        ai_status = "ok"
-    except Exception as exc:
-        logger.exception("AI stage failed for %s", inspection_id)
-        ai_status = f"error: {exc}"
-        ai = None
+        async def run_ocr():
+            try:
+                o = await asyncio.to_thread(extract_text, inspection_id)
+                await asyncio.to_thread(save_result, inspection_id, STAGE_OCR, o)
+                return "ok", o
+            except Exception as e:
+                logger.exception("OCR stage failed")
+                return f"error: {e}", None
 
-    # ── Stage 5: PDF Report ───────────────────────────────────────────────────
-    try:
-        report: ReportResult = generate_report(inspection_id)
-        create_or_update_inspection(
-            db, inspection_id,
-            report_path=report.report_path,
-            completed_at=datetime.utcnow(),
-            pipeline_status="complete",
-        )
-        report_status = "ok"
-    except Exception as exc:
-        logger.exception("Report stage failed for %s", inspection_id)
-        report_status = f"error: {exc}"
-        report = None
+        (v_stat, vision), (o_stat, ocr) = await asyncio.gather(run_vision(), run_ocr())
+        vision_status = v_stat
+        ocr_status = o_stat
+        
+        if vision:
+            create_or_update_inspection(
+                db, inspection_id,
+                front_blur_score=vision.front.quality.blur_score,
+                back_blur_score=vision.back.quality.blur_score,
+                overall_quality_ok=int(vision.overall_quality_ok),
+                pipeline_status="vision_complete",
+            )
+        if ocr:
+            f = ocr.combined_dell_fields
+            create_or_update_inspection(
+                db, inspection_id,
+                service_tag=f.service_tag,
+                part_number=f.part_number,
+                model_name=f.model_name,
+                express_service_code=f.express_service_code,
+                pipeline_status="ocr_complete",
+            )
+            
+        yield f"data: {json.dumps({'stage': 'vision', 'status': vision_status})}\\n\\n"
+        yield f"data: {json.dumps({'stage': 'ocr', 'status': ocr_status})}\\n\\n"
 
-    logger.info("Full pipeline complete for inspection %s", inspection_id)
+        # ── Stage 3: Comparison ───────────────────────────────────────────────────
+        try:
+            comparison = await asyncio.to_thread(run_comparison, inspection_id)
+            create_or_update_inspection(
+                db, inspection_id,
+                comparison_risk_score=comparison.total_risk_score,
+                pipeline_status="comparison_complete",
+            )
+            comparison_status = "ok"
+        except Exception as exc:
+            logger.exception("Comparison stage failed")
+            comparison_status = f"error: {exc}"
+            
+        yield f"data: {json.dumps({'stage': 'comparison', 'status': comparison_status})}\\n\\n"
 
-    return PipelineResult(
-        inspection_id=inspection_id,
-        vision_status=vision_status,
-        ocr_status=ocr_status,
-        comparison_status=comparison_status,
-        ai_status=ai_status,
-        report_status=report_status,
-        fraud_score=ai.fraud_score if ai else None,
-        verdict=ai.verdict if ai else None,
-        report_path=report.report_path if report else None,
-        overall_quality_ok=vision.overall_quality_ok if vision else None,
-        service_tag=f.service_tag if f else None,
-        model_name=f.model_name if f else None,
-        completed_at=datetime.utcnow(),
-    )
+        # ── Stage 4: AI Reasoning ─────────────────────────────────────────────────
+        try:
+            ai = await asyncio.to_thread(run_ai_analysis, inspection_id)
+            create_or_update_inspection(
+                db, inspection_id,
+                fraud_score=ai.fraud_score,
+                verdict=ai.verdict,
+                confidence_level=ai.confidence_level,
+                ai_model_used=ai.ai_model_used,
+                final_reasoning=ai.final_reasoning,
+                pipeline_status="ai_complete",
+            )
+            ai_status = "ok"
+        except Exception as exc:
+            logger.exception("AI stage failed")
+            ai_status = f"error: {exc}"
+            
+        yield f"data: {json.dumps({'stage': 'ai', 'status': ai_status})}\\n\\n"
+
+        # ── Stage 5: PDF Report ───────────────────────────────────────────────────
+        try:
+            report = await asyncio.to_thread(generate_report, inspection_id)
+            create_or_update_inspection(
+                db, inspection_id,
+                report_path=report.report_path,
+                completed_at=datetime.utcnow(),
+                pipeline_status="complete",
+            )
+            report_status = "ok"
+        except Exception as exc:
+            logger.exception("Report stage failed")
+            report_status = f"error: {exc}"
+            
+        yield f"data: {json.dumps({'stage': 'report', 'status': report_status})}\\n\\n"
+
+        # Final Payload
+        final_payload = {
+            "stage": "complete",
+            "result": {
+                "inspection_id": inspection_id,
+                "vision_status": vision_status,
+                "ocr_status": ocr_status,
+                "comparison_status": comparison_status,
+                "ai_status": ai_status,
+                "report_status": report_status,
+                "fraud_score": ai.fraud_score if ai else None,
+                "verdict": ai.verdict if ai else None,
+                "report_path": report.report_path if report else None,
+                "overall_quality_ok": vision.overall_quality_ok if vision else None,
+                "service_tag": f.service_tag if f else None,
+                "model_name": f.model_name if f else None,
+            }
+        }
+        yield f"data: {json.dumps(final_payload)}\\n\\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { uploadInspection, runPipeline, apiError } from "../lib/api.js";
+import { uploadInspection, streamPipeline, apiError } from "../lib/api.js";
 import { verdictTone, scoreTone, useTheme } from "../lib/auth.jsx";
 import { Panel, Eyebrow, Btn, Radar, ScoreDial, Tag, ErrorNote } from "../components/ui.jsx";
 
@@ -22,13 +22,22 @@ export default function NewInspection() {
   const [result, setResult] = useState(null);
   const [inspId, setInspId] = useState(null);
 
+  const [progress, setProgress] = useState({});
+
   async function run() {
-    setErr(""); setStep(1);
+    setErr(""); setStep(1); setProgress({});
     try {
       const up = await uploadInspection(front, back);   // POST /upload/inspection
       setInspId(up.inspection_id);
-      const res = await runPipeline(up.inspection_id);   // POST /pipeline/run/{id}
-      setResult(res); setStep(2);
+      
+      await streamPipeline(up.inspection_id, (evt) => {
+        if (evt.stage === "complete") {
+          setResult(evt.result);
+          setStep(2);
+        } else {
+          setProgress(p => ({ ...p, [evt.stage]: evt.status || "ok" }));
+        }
+      });
     } catch (e) {
       setErr(apiError(e)); setStep(0);
     }
@@ -69,7 +78,7 @@ export default function NewInspection() {
         </div>
       )}
 
-      {step === 1 && <RunningView />}
+      {step === 1 && <RunningView progress={progress} />}
 
       {step === 2 && result && (
         <div>
@@ -116,8 +125,10 @@ function DropZone({ label, hint, file, setFile, id }) {
   );
 }
 
-function RunningView() {
+function RunningView({ progress }) {
   const { T } = useTheme();
+  const stageKeys = ["vision", "ocr", "comparison", "ai", "report"];
+
   return (
     <Panel pad={40}>
       <div style={{ textAlign: "center" }}>
@@ -125,15 +136,25 @@ function RunningView() {
         <div style={{ fontFamily: T.mono, fontSize: 13, letterSpacing: "0.1em", textTransform: "uppercase", color: T.dellHi, marginTop: 20 }}>Running pipeline…</div>
         <div style={{ fontFamily: T.mono, fontSize: 12, color: T.inkDim, marginTop: 8 }}>Vision → OCR → Comparison → AI → PDF</div>
         <div style={{ maxWidth: 420, margin: "26px auto 0", display: "flex", flexDirection: "column", gap: 9 }}>
-          {STAGES.map(([name, detail]) => (
-            <div key={name} style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: T.mono, fontSize: 12, color: T.inkDim }}>
-              <span className="pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: T.dell }} />
-              <span style={{ color: T.ink }}>{name}</span>
-              <span style={{ color: T.inkFaint }}>· {detail}</span>
-            </div>
-          ))}
+          {STAGES.map(([name, detail], i) => {
+            const key = stageKeys[i];
+            const isDone = progress[key];
+            const isError = isDone && isDone !== "ok";
+            
+            return (
+              <div key={name} style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: T.mono, fontSize: 12, color: T.inkDim }}>
+                {isDone ? (
+                  <span style={{ color: isError ? T.red : T.green, fontSize: 14, width: 14 }}>{isError ? "⨯" : "✓"}</span>
+                ) : (
+                  <span className="pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: T.dell, margin: "3px 3px 3px 3px" }} />
+                )}
+                <span style={{ color: isDone ? T.ink : T.inkDim }}>{name}</span>
+                <span style={{ color: T.inkFaint }}>· {detail}</span>
+              </div>
+            );
+          })}
         </div>
-        <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkFaint, marginTop: 22 }}>PaddleOCR + GPT-4.1 can take 20–60s. Please wait.</div>
+        <div style={{ fontFamily: T.mono, fontSize: 11, color: T.inkFaint, marginTop: 22 }}>Live streaming updates...</div>
       </div>
     </Panel>
   );

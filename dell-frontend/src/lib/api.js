@@ -61,6 +61,40 @@ export function uploadInspection(frontFile, backFile) {
 export const runPipeline = (id) =>
   client.post(`/api/v1/pipeline/run/${id}`).then((r) => r.data);
 
+export const streamPipeline = async (id, onEvent) => {
+  const token = localStorage.getItem("pg_token");
+  const headers = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}/api/v1/pipeline/run/${id}`, {
+    method: "POST",
+    headers,
+  });
+
+  if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let lines = buffer.split("\\n\\n");
+    buffer = lines.pop(); // keep incomplete chunk
+    for (let line of lines) {
+      if (line.startsWith("data: ")) {
+        const dataStr = line.replace("data: ", "");
+        try {
+          const parsed = JSON.parse(dataStr);
+          onEvent(parsed);
+        } catch (e) {}
+      }
+    }
+  }
+};
+
 /* ------------------------ Individual stages (optional) ------------------- */
 export const stages = {
   vision: (id) => client.post(`/api/v1/vision/analyze/${id}`).then((r) => r.data),
