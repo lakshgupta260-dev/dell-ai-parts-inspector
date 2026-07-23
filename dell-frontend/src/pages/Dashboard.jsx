@@ -1,72 +1,106 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { history, apiError } from "../lib/api.js";
-import { verdictTone, scoreTone, useTheme } from "../lib/auth.jsx";
+import { verdictTone, scoreTone, useTheme, useAuth } from "../lib/auth.jsx";
 import { Panel, Eyebrow, Tag, Loading, ErrorNote, Empty } from "../components/ui.jsx";
 
 export default function Dashboard() {
   const { T } = useTheme();
+  const { user } = useAuth();
   const nav = useNavigate();
   const [analytics, setAnalytics] = useState(null);
   const [items, setItems] = useState([]);
+  const [escalatedItems, setEscalatedItems] = useState([]);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const [a, h] = await Promise.all([history.analytics(), history.list(1, 8)]);
-        setAnalytics(a); setItems(h.items || []);
+        const p = [history.analytics(), history.list(1, 8)];
+        if (user?.role === "QA_MANAGER") {
+            p.push(history.escalated(1, 8));
+        }
+        const res = await Promise.all(p);
+        setAnalytics(res[0]); 
+        setItems(res[1].items || []);
+        if (user?.role === "QA_MANAGER") {
+            setEscalatedItems(res[2].items || []);
+        }
       } catch (e) { setErr(apiError(e)); } finally { setLoading(false); }
     })();
-  }, []);
+  }, [user?.role]);
 
   if (loading) return <Loading label="Loading dashboard…" />;
 
   return (
     <div>
       <div style={{ marginBottom: 24 }} className="slide-up">
-        <Eyebrow>Overview</Eyebrow>
-        <h1 style={{ fontFamily: T.sans, fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink, margin: "10px 0 0", display: "inline-block" }}>Inspection dashboard</h1>
+        <Eyebrow>{user?.role === "QA_MANAGER" ? "Quality Assurance" : "Overview"}</Eyebrow>
+        <h1 style={{ fontFamily: T.sans, fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", color: T.ink, margin: "10px 0 0", display: "inline-block" }}>
+          {user?.role === "QA_MANAGER" ? "QA Command Center" : "Inspection dashboard"}
+        </h1>
       </div>
 
       {err && <div style={{ marginBottom: 20 }}><ErrorNote>{err}</ErrorNote></div>}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14, marginBottom: 22 }} className="slide-up stagger-1">
         <StatCard label="Total inspected" value={analytics?.total_inspections ?? 0} tone={T.ink} />
-        <StatCard label="Authentic" value={analytics?.authentic_count ?? 0} tone={T.green} />
-        <StatCard label="Suspicious" value={analytics?.suspicious_count ?? 0} tone={T.amber} />
-        <StatCard label="Counterfeit" value={analytics?.counterfeit_count ?? 0} tone={T.red} />
+        {user?.role === "QA_MANAGER" ? (
+          <>
+            <StatCard label="Escalated" value={escalatedItems.length} tone={T.amber} />
+            <StatCard label="Critical Flags" value={analytics?.counterfeit_count ?? 0} tone={T.red} />
+            <StatCard label="Pass Rate" value={`${(analytics?.pass_rate ?? 0).toFixed(1)}%`} tone={T.green} />
+          </>
+        ) : (
+          <>
+            <StatCard label="Authentic" value={analytics?.authentic_count ?? 0} tone={T.green} />
+            <StatCard label="Suspicious" value={analytics?.suspicious_count ?? 0} tone={T.amber} />
+            <StatCard label="Counterfeit" value={analytics?.counterfeit_count ?? 0} tone={T.red} />
+          </>
+        )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }} className="slide-up stagger-2">
-        <Panel>
-          <Eyebrow>Pass rate</Eyebrow>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 14 }}>
-            <span style={{ fontFamily: T.mono, fontSize: 44, fontWeight: 700, color: T.green, lineHeight: 1 }}>{(analytics?.pass_rate ?? 0).toFixed(1)}</span>
-            <span style={{ fontFamily: T.mono, fontSize: 16, color: T.inkDim }}>%</span>
-          </div>
-          <div style={{ height: 8, background: T.bg, borderRadius: 4, overflow: "hidden", marginTop: 16, border: `1px solid ${T.line}` }}>
-            <div style={{ width: `${analytics?.pass_rate ?? 0}%`, height: "100%", background: `linear-gradient(90deg,${T.green}88,${T.green})`, transition: "width .8s" }} />
-          </div>
-          <div style={{ fontFamily: T.sans, fontSize: 13, color: T.inkDim, marginTop: 10 }}>Share of parts verdicted AUTHENTIC.</div>
-        </Panel>
-        <Panel>
-          <Eyebrow>Average fraud score</Eyebrow>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 14 }}>
-            <span style={{ fontFamily: T.mono, fontSize: 44, fontWeight: 700, color: scoreTone(analytics?.avg_fraud_score, T), lineHeight: 1 }}>{(analytics?.avg_fraud_score ?? 0).toFixed(1)}</span>
-            <span style={{ fontFamily: T.mono, fontSize: 16, color: T.inkDim }}>/ 100</span>
-          </div>
-          <div style={{ height: 8, background: T.bg, borderRadius: 4, overflow: "hidden", marginTop: 16, border: `1px solid ${T.line}` }}>
-            <div style={{ width: `${analytics?.avg_fraud_score ?? 0}%`, height: "100%", background: scoreTone(analytics?.avg_fraud_score, T), transition: "width .8s" }} />
-          </div>
-          <div style={{ fontFamily: T.sans, fontSize: 13, color: T.inkDim, marginTop: 10 }}>Mean across all completed inspections.</div>
-        </Panel>
-      </div>
+      {user?.role !== "QA_MANAGER" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }} className="slide-up stagger-2">
+          <Panel>
+            <Eyebrow>Pass rate</Eyebrow>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 14 }}>
+              <span style={{ fontFamily: T.mono, fontSize: 44, fontWeight: 700, color: T.green, lineHeight: 1 }}>{(analytics?.pass_rate ?? 0).toFixed(1)}</span>
+              <span style={{ fontFamily: T.mono, fontSize: 16, color: T.inkDim }}>%</span>
+            </div>
+            <div style={{ height: 8, background: T.bg, borderRadius: 4, overflow: "hidden", marginTop: 16, border: `1px solid ${T.line}` }}>
+              <div style={{ width: `${analytics?.pass_rate ?? 0}%`, height: "100%", background: `linear-gradient(90deg,${T.green}88,${T.green})`, transition: "width .8s" }} />
+            </div>
+            <div style={{ fontFamily: T.sans, fontSize: 13, color: T.inkDim, marginTop: 10 }}>Share of parts verdicted AUTHENTIC.</div>
+          </Panel>
+          <Panel>
+            <Eyebrow>Average fraud score</Eyebrow>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 14 }}>
+              <span style={{ fontFamily: T.mono, fontSize: 44, fontWeight: 700, color: scoreTone(analytics?.avg_fraud_score, T), lineHeight: 1 }}>{(analytics?.avg_fraud_score ?? 0).toFixed(1)}</span>
+              <span style={{ fontFamily: T.mono, fontSize: 16, color: T.inkDim }}>/ 100</span>
+            </div>
+            <div style={{ height: 8, background: T.bg, borderRadius: 4, overflow: "hidden", marginTop: 16, border: `1px solid ${T.line}` }}>
+              <div style={{ width: `${analytics?.avg_fraud_score ?? 0}%`, height: "100%", background: scoreTone(analytics?.avg_fraud_score, T), transition: "width .8s" }} />
+            </div>
+            <div style={{ fontFamily: T.sans, fontSize: 13, color: T.inkDim, marginTop: 10 }}>Mean across all completed inspections.</div>
+          </Panel>
+        </div>
+      )}
 
-      <Panel pad={0} className="slide-up stagger-3">
+      {user?.role === "QA_MANAGER" && (
+        <Panel pad={0} className="slide-up stagger-3" style={{ marginBottom: 22, border: `2px solid ${T.amber}88` }}>
+          <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Eyebrow><span style={{ color: T.amber }}>Escalated Inspections (Needs Review)</span></Eyebrow>
+          </div>
+          {escalatedItems.length ? <HistoryTable rows={escalatedItems} onOpen={(id) => nav(`/inspection/${id}`)} /> :
+            <Empty>No escalated inspections. Great job!</Empty>}
+        </Panel>
+      )}
+
+      <Panel pad={0} className="slide-up stagger-4">
         <div style={{ padding: "18px 22px", borderBottom: `1px solid ${T.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Eyebrow>Recent inspections</Eyebrow>
+          <Eyebrow>{user?.role === "QA_MANAGER" ? "All Recent Inspections" : "Recent inspections"}</Eyebrow>
           <button onClick={() => nav("/history")} style={{ fontFamily: T.sans, fontWeight: 600, fontSize: 13, color: T.dellHi, background: "none", border: "none", cursor: "pointer" }}>view all →</button>
         </div>
         {items.length ? <HistoryTable rows={items} onOpen={(id) => nav(`/inspection/${id}`)} /> :

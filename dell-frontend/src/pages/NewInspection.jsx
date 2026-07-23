@@ -32,6 +32,11 @@ export default function NewInspection() {
       
       await streamPipeline(up.inspection_id, (evt) => {
         if (evt.stage === "complete") {
+          if (evt.result && evt.result.verdict === "INVALID") {
+            setErr("Invalid image: The uploaded image does not appear to be a valid hardware part.");
+            setStep(0);
+            return;
+          }
           setResult(evt.result);
           setStep(2);
         } else {

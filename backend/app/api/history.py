@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.history import AnalyticsSummary, InspectionDetail, PaginatedHistory
-from app.services.history_service import get_analytics, get_history, get_inspection_detail
+from app.services.history_service import get_analytics, get_escalated_history, get_history, get_inspection_detail
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/history", tags=["History"])
@@ -32,6 +32,20 @@ def list_history(
     db: Session = Depends(get_db),
 ) -> PaginatedHistory:
     return get_history(db, page=page, page_size=page_size)
+
+
+@router.get(
+    "/escalated",
+    response_model=PaginatedHistory,
+    summary="Get paginated escalated inspections",
+    description="Returns all inspection records that have been escalated, newest first.",
+)
+def list_escalated(
+    page: int = Query(default=1, ge=1, description="Page number (1-indexed)."),
+    page_size: int = Query(default=20, ge=1, le=100, description="Records per page."),
+    db: Session = Depends(get_db),
+) -> PaginatedHistory:
+    return get_escalated_history(db, page=page, page_size=page_size)
 
 
 @router.get(

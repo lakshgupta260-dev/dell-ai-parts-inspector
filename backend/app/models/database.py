@@ -43,6 +43,7 @@ class InspectionRecord(Base):
     # Status
     pipeline_status = Column(String(30), default="uploaded")
     report_path = Column(String(300), nullable=True)
+    is_escalated = Column(Integer, default=0)
 
     # Inspector (set after auth is integrated)
     inspector_username = Column(String(100), nullable=True)

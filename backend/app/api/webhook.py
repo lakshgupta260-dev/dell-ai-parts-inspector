@@ -87,9 +87,29 @@ async def receive_whatsapp_webhook(
                                 
                             elif button_id.startswith("esc_"):
                                 inspection_id = button_id.replace("esc_", "")
-                                logger.info(f"QA Manager escalated inspection: {inspection_id}")
+                                logger.info(f"Escalation requested for inspection: {inspection_id}")
+                                
+                                # Update DB
+                                from app.core.database import SessionLocal
+                                from app.models.database import InspectionRecord
+                                db = SessionLocal()
+                                try:
+                                    record = db.query(InspectionRecord).filter_by(inspection_id=inspection_id).first()
+                                    if record:
+                                        record.is_escalated = 1
+                                        db.commit()
+                                finally:
+                                    db.close()
+
                                 from app.services.whatsapp_service import send_whatsapp_text
+                                
+                                # Send confirmation to the person who escalated (Inspector)
                                 msg = f"🚨 Inspection {inspection_id[:8]} has been ESCALATED.\n\nA senior QA Manager has been notified and the part has been flagged in the database."
                                 background_tasks.add_task(send_whatsapp_text, sender_phone, msg)
+                                
+                                # Notify QA Manager
+                                qa_phone = getattr(settings, 'QA_MANAGER_PHONE', sender_phone)
+                                qa_msg = f"🔔 *ESCALATION ALERT*\n\nInspection {inspection_id[:8]} has been escalated for manual QA review. Please check your QA Dashboard."
+                                background_tasks.add_task(send_whatsapp_text, qa_phone, qa_msg)
 
     return {"status": "ok"}

@@ -330,8 +330,13 @@ def _detect_burn_marks(image: np.ndarray) -> bool:
     
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        if area > 1000:  # If a dark patch is larger than 1000px, likely a burn
-            return True
+        # Increase threshold significantly to prevent false positives from shadows/chips
+        if area > 4500:  
+            # Check rectangularity. Chips are rectangular, burns are irregular.
+            x, y, w, h = cv2.boundingRect(cnt)
+            bounding_area = w * h
+            if bounding_area > 0 and (area / bounding_area) < 0.8:
+                return True
             
     return False
 

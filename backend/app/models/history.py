@@ -22,6 +22,7 @@ class InspectionSummary(BaseModel):
     verdict: Optional[str] = None
     pipeline_status: str
     inspector_username: Optional[str] = None
+    is_escalated: bool = False
 
 class InspectionDetail(InspectionSummary):
     """Full inspection record for detail views."""

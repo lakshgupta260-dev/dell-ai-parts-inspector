@@ -90,19 +90,19 @@ def run_comparison(inspection_id: str) -> ComparisonResult:
         
         vision_match = 100
         if expected_vision.get("has_qr_code") and not has_qr:
-            vision_match -= 40
-            total_risk = min(100, total_risk + 30)
+            vision_match -= 20
+            total_risk = min(100, total_risk + 15)
             missing.append("QR/DataMatrix Code (Golden Mismatch)")
             
         if expected_vision.get("has_label") and not has_label:
-            vision_match -= 50
-            total_risk = min(100, total_risk + 40)
+            vision_match -= 30
+            total_risk = min(100, total_risk + 20)
             missing.append("Physical Label (Golden Mismatch)")
             
         anomaly_score = 0
         if has_burns and not expected_vision.get("has_burn_marks"):
-            anomaly_score = 100
-            total_risk = min(100, total_risk + 50)
+            anomaly_score = 80
+            total_risk = min(100, total_risk + 10)
             violations.append("Burn Marks Detected (Anomaly)")
             
         similarity_metrics = {
@@ -135,10 +135,10 @@ def _check_service_tag(value) -> FieldCheck:
     risk = 0
     if not present:
         flags.append("Service Tag not found — critical missing field.")
-        risk = 35
+        risk = 25
     elif not valid:
         flags.append(f"Service Tag '{value}' does not match 7-char alphanumeric format.")
-        risk = 25
+        risk = 35
     return FieldCheck(
         field_name="Service Tag",
         extracted_value=value,
@@ -160,7 +160,7 @@ def _check_esc(value) -> FieldCheck:
         risk = 15
     elif not valid:
         flags.append(f"ESC '{value}' does not match 11-digit format.")
-        risk = 10
+        risk = 20
     return FieldCheck(
         field_name="Express Service Code",
         extracted_value=value,
@@ -179,10 +179,10 @@ def _check_part_number(value) -> FieldCheck:
     risk = 0
     if not present:
         flags.append("Part Number not found.")
-        risk = 20
+        risk = 18
     elif not valid:
         flags.append(f"Part Number '{value}' does not match CN-XXXXXX or 0XXXXXX format.")
-        risk = 15
+        risk = 25
     return FieldCheck(
         field_name="Part Number",
         extracted_value=value,
@@ -201,10 +201,10 @@ def _check_model(value) -> FieldCheck:
     risk = 0
     if not present:
         flags.append("Dell model name not found on label.")
-        risk = 10
+        risk = 12
     elif not valid:
         flags.append(f"Model '{value}' not in known Dell product families.")
-        risk = 8
+        risk = 15
     return FieldCheck(
         field_name="Model Name",
         extracted_value=value,
@@ -226,7 +226,7 @@ def _check_ocr_confidence(avg_conf: float) -> FieldCheck:
         is_valid_format=valid,
         expected_format="≥ 80% average confidence across all text blocks",
         flags=flags,
-        risk_contribution=0 if valid else 12,
+        risk_contribution=0 if valid else 8,
     )
 
 

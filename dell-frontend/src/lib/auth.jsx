@@ -35,24 +35,24 @@ const NIGHT = {
 
 const DAY = {
   name: "day",
-  bg: "#E8F0FE", // Distinctly blue tinted background
-  bg2: "#D2E3FC", 
+  bg: "#F8FAFC", // Clean light slate background
+  bg2: "#F1F5F9", 
   panel: "#FFFFFF", // Pure white panels for contrast
-  panelHi: "#F4F8FD", // Soft blue highlight for hover states
-  line: "#B9D1F9", // Soft blue borders
-  lineHi: "#8AB4F8", 
-  ink: "#174EA6", // Deep corporate blue text instead of black
-  inkDim: "#1967D2",
-  inkFaint: "#4285F4",
-  dell: "#0076CE",
-  dellHi: "#005C9E",
-  green: "#10B981",
+  panelHi: "#F1F5F9", // Subtle hover
+  line: "#E2E8F0", // Light grey borders
+  lineHi: "#CBD5E1", 
+  ink: "#0F172A", // Dark slate for primary text
+  inkDim: "#475569", // Medium slate
+  inkFaint: "#64748B", // Faint slate
+  dell: "#0284C7", // Vibrant sky blue (like the ENROLL NOW buttons)
+  dellHi: "#0369A1", // Darker blue for hover
+  green: "#10B981", // Bright emerald for success/match
   amber: "#F59E0B",
   red: "#EF4444",
-  laser: { r: 0, g: 118, b: 206 },
-  gridOpacity: 0.03,
+  laser: { r: 2, g: 132, b: 199 },
+  gridOpacity: 0.04,
   nodeOpacity: 0.1,
-  beamOpacity: 0.03,
+  beamOpacity: 0.04,
   lineOpacity: 0.1,
   mono: "'JetBrains Mono', 'Fira Code', 'IBM Plex Mono', ui-monospace, monospace",
   sans: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",

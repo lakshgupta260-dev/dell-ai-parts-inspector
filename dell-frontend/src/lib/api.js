@@ -113,6 +113,9 @@ export const history = {
   analytics: () => client.get(`/api/v1/history/analytics`).then((r) => r.data),
   // GET /api/v1/history/{inspection_id}
   detail: (id) => client.get(`/api/v1/history/${id}`).then((r) => r.data),
+  // GET /api/v1/history/escalated
+  escalated: (page = 1, pageSize = 50) =>
+    client.get(`/api/v1/history/escalated`, { params: { page, page_size: pageSize } }).then((r) => r.data),
 };
 
 /* ------------------------------ Report ----------------------------------- */

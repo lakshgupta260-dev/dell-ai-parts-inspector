@@ -65,6 +65,24 @@ def get_history(
     items = [InspectionSummary.model_validate(r) for r in records]
     return PaginatedHistory(total=total, page=page, page_size=page_size, items=items)
 
+def get_escalated_history(
+    db: Session, page: int = 1, page_size: int = 20
+) -> PaginatedHistory:
+    """
+    Return a paginated list of escalated inspections, newest first.
+    """
+    offset = (page - 1) * page_size
+    query = db.query(InspectionRecord).filter(InspectionRecord.is_escalated == 1)
+    total = query.count()
+    records = (
+        query
+        .order_by(InspectionRecord.uploaded_at.desc())
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
+    items = [InspectionSummary.model_validate(r) for r in records]
+    return PaginatedHistory(total=total, page=page, page_size=page_size, items=items)
 
 def get_inspection_detail(db: Session, inspection_id: str) -> Optional[InspectionDetail]:
     """Return full detail for one inspection, or None if not found."""
