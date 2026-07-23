@@ -80,6 +80,10 @@ def send_whatsapp_notification(
         f"🕐 {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}"
     )
 
+    # TRUNCATE to avoid WhatsApp 1024 char limit 400 Bad Request
+    if len(message_body) > 1024:
+        message_body = message_body[:1020] + "..."
+
     payload = {
         "messaging_product": "whatsapp",
         "to": phone_number.replace(" ", "").replace("-", ""),
