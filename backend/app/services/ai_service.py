@@ -42,21 +42,178 @@ class InspectionState(TypedDict):
 
 def run_ai_analysis(inspection_id: str) -> AIAnalysisResult:
     """
-    Run the full LangGraph AI reasoning pipeline.
-    Falls back to rule-based scoring if no OpenAI key is configured.
+    Run the full AI reasoning and fraud scoring stage.
+    Supports Gemini 2.0 Flash (Multimodal), LangGraph + OpenAI, or rule-based fallback.
     """
     vision = load_result(inspection_id, STAGE_VISION, VisionResult)
     ocr = load_result(inspection_id, STAGE_OCR, OCRResult)
     comparison = load_result(inspection_id, STAGE_COMPARISON, ComparisonResult)
 
-    if settings.OPENAI_API_KEY:
+    if settings.GEMINI_API_KEY:
+        try:
+            result = _run_gemini(inspection_id, vision, ocr, comparison)
+        except Exception as e:
+            logger.error("Gemini analysis failed, falling back to rule-based: %s", e)
+            result = _rule_based_fallback(inspection_id, vision, ocr, comparison)
+    elif settings.OPENAI_API_KEY:
         result = _run_langgraph(inspection_id, vision, ocr, comparison)
     else:
-        logger.warning("OPENAI_API_KEY not set — using rule-based fallback for inspection %s", inspection_id)
+        logger.warning("No AI API keys configured — using rule-based fallback for inspection %s", inspection_id)
         result = _rule_based_fallback(inspection_id, vision, ocr, comparison)
 
     save_result(inspection_id, STAGE_AI, result)
     return result
+
+
+def _run_gemini(
+    inspection_id: str,
+    vision: VisionResult,
+    ocr: OCRResult,
+    comparison: ComparisonResult,
+) -> AIAnalysisResult:
+    """Run multimodal analysis using Gemini 2.0 Flash."""
+    import base64
+    import json
+    from pathlib import Path
+    import requests
+    from app.utils.image_utils import get_inspection_image_paths
+
+    logger.info("Starting Gemini multimodal analysis for %s", inspection_id)
+
+    # 1. Resolve absolute paths & base64 encode images
+    front_rel, back_rel = get_inspection_image_paths(inspection_id)
+    backend_root = Path(__file__).resolve().parents[2]
+    front_abs = backend_root / front_rel
+    back_abs = backend_root / back_rel
+
+    def get_mime_type(path: Path) -> str:
+        ext = path.suffix.lower()
+        if ext == ".png":
+            return "image/png"
+        elif ext == ".webp":
+            return "image/webp"
+        return "image/jpeg"
+
+    front_b64, front_mime = None, "image/jpeg"
+    if front_abs.exists():
+        try:
+            with open(front_abs, "rb") as f:
+                front_b64 = base64.b64encode(f.read()).decode("utf-8")
+            front_mime = get_mime_type(front_abs)
+        except Exception as e:
+            logger.error("Failed to load front image for Gemini: %s", e)
+
+    back_b64, back_mime = None, "image/jpeg"
+    if back_abs.exists():
+        try:
+            with open(back_abs, "rb") as f:
+                back_b64 = base64.b64encode(f.read()).decode("utf-8")
+            back_mime = get_mime_type(back_abs)
+        except Exception as e:
+            logger.error("Failed to load back image for Gemini: %s", e)
+
+    # 2. Build metadata contexts
+    vision_ctx = (
+        f"Front image: blur_score={vision.front.quality.blur_score}, is_blurry={vision.front.quality.is_blurry}, "
+        f"edge_density={vision.front.edge_density}, label_regions={len(vision.front.label_regions)}. "
+        f"Back image: blur_score={vision.back.quality.blur_score}, is_blurry={vision.back.quality.is_blurry}. "
+        f"Overall quality ok: {vision.overall_quality_ok}."
+    )
+    ocr_ctx = (
+        f"Service Tag: {ocr.combined_dell_fields.service_tag}, "
+        f"Express Service Code: {ocr.combined_dell_fields.express_service_code}, "
+        f"Part Number: {ocr.combined_dell_fields.part_number}, "
+        f"Model: {ocr.combined_dell_fields.model_name}, "
+        f"Regulatory: {ocr.combined_dell_fields.regulatory_info}."
+    )
+    metrics = comparison.similarity_metrics or {}
+    cmp_ctx = (
+        f"Golden Reference Profile Used: {comparison.golden_reference_used}. "
+        f"Anomaly Score: {metrics.get('anomaly_score', 0)}/100. "
+        f"Comparison risk score: {comparison.total_risk_score}/100. "
+        f"Missing critical fields: {comparison.missing_critical_fields}. "
+        f"Format violations: {comparison.format_violations}. "
+        f"{comparison.comparison_summary}"
+    )
+
+    SYSTEM_INSTRUCTION = (
+        "You are an expert Dell hardware authenticity inspector with 15 years of experience. "
+        "Analyze the provided inspection images, text extraction, and metadata. Produce a precise, technical authenticity assessment. "
+        "Directly compare the physical board images against golden layout expectations to identify fraud or defects, specifically:\n"
+        "  - Missing Label: A physical label area is completely blank or missing its sticker.\n"
+        "  - Tampered Label: Text looks scuffed, handwritten, scratched, or has irregular character/font alignment.\n"
+        "  - Burn Marks: Dark, brown/black localized heat spots or burn marks on the PCB/components.\n"
+        "  - Liquid Damage: Green/white corrosion residue or water stains on circuitry.\n"
+        "  - Reused Board / Wear: Dust, heavy scratching, solder modifications, or scuffs suggesting previous usage.\n\n"
+        "Be factual, refer to discrepancies clearly, and decide on a verdict."
+    )
+
+    user_prompt = (
+        f"Inspect the uploaded hardware part and compute a final fraud probability score (0 to 100):\n"
+        f"  - 0-30: AUTHENTIC (Good quality, matches golden reference, no major defects)\n"
+        f"  - 31-69: SUSPICIOUS (Minor defects, scuffs, worn labels, or formatting mismatches)\n"
+        f"  - 70-100: COUNTERFEIT (Clear fraud, tampered labels, missing labels, liquid damage, or burn marks)\n\n"
+        f"--- METADATA & ENGINE SIGNALS ---\n"
+        f"OCR Fields: {ocr_ctx}\n"
+        f"Comparison Analysis: {cmp_ctx}\n"
+        f"Vision Signals: {vision_ctx}\n"
+    )
+
+    # 3. Formulate the Gemini API payload
+    parts = [{"text": user_prompt}]
+    if front_b64:
+        parts.append({"inlineData": {"mimeType": front_mime, "data": front_b64}})
+    if back_b64:
+        parts.append({"inlineData": {"mimeType": back_mime, "data": back_b64}})
+
+    schema = {
+        "type": "OBJECT",
+        "properties": {
+            "verdict": {"type": "STRING", "enum": ["AUTHENTIC", "SUSPICIOUS", "COUNTERFEIT"]},
+            "confidence": {"type": "STRING", "enum": ["HIGH", "MEDIUM", "LOW"]},
+            "fraud_score": {"type": "INTEGER"},
+            "reasoning": {"type": "STRING"},
+            "recommendations": {"type": "ARRAY", "items": {"type": "STRING"}},
+            "visual_analysis": {"type": "STRING"},
+            "text_analysis": {"type": "STRING"},
+            "discrepancy_analysis": {"type": "STRING"}
+        },
+        "required": [
+            "verdict", "confidence", "fraud_score", "reasoning", "recommendations",
+            "visual_analysis", "text_analysis", "discrepancy_analysis"
+        ]
+    }
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={settings.GEMINI_API_KEY}"
+    payload = {
+        "contents": [{"parts": parts}],
+        "systemInstruction": {"parts": [{"text": SYSTEM_INSTRUCTION}]},
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "responseSchema": schema
+        }
+    }
+
+    # 4. Invoke API & Parse response
+    res = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=30)
+    res.raise_for_status()
+    res_data = res.json()
+
+    text_resp = res_data["candidates"][0]["content"]["parts"][0]["text"]
+    parsed = json.loads(text_resp)
+
+    return AIAnalysisResult(
+        inspection_id=inspection_id,
+        visual_analysis=parsed["visual_analysis"],
+        text_analysis=parsed["text_analysis"],
+        discrepancy_analysis=parsed["discrepancy_analysis"],
+        final_reasoning=parsed["reasoning"],
+        fraud_score=max(0, min(100, int(parsed["fraud_score"]))),
+        verdict=parsed["verdict"],
+        confidence_level=parsed["confidence"],
+        recommendations=parsed["recommendations"],
+        ai_model_used="gemini-2.0-flash",
+    )
 
 
 def _run_langgraph(
