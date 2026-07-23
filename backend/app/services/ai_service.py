@@ -258,7 +258,23 @@ def _rule_based_fallback(
         and not ocr.combined_dell_fields.model_name
     )
 
-    if no_dell_identifiers:
+    text_lower = (ocr.front.full_text + " " + ocr.back.full_text).lower()
+    hardware_keywords = ["dell", "dp/n", "rev", "model", "made in", "regulatory", "fcc"]
+    has_hardware_keywords = any(kw in text_lower for kw in hardware_keywords)
+    
+    total_blocks = ocr.front.text_block_count + ocr.back.text_block_count
+    has_label_regions = (len(vision.front.label_regions) > 0) or (len(vision.back.label_regions) > 0)
+
+    is_invalid = False
+    if total_blocks == 0:
+        is_invalid = True
+    elif no_dell_identifiers and not has_hardware_keywords:
+        if not has_label_regions:
+            is_invalid = True
+        elif total_blocks > 20:
+            is_invalid = True
+
+    if is_invalid:
         verdict = "INVALID"
         score = 0
         confidence = "HIGH"
