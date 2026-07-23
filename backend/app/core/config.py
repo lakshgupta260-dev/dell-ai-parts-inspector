@@ -41,6 +41,7 @@ class Settings:
 
     # ── AI ────────────────────────────────────────────────────────────────────
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 
     # ── WhatsApp Cloud API ────────────────────────────────────────────────────
     WHATSAPP_TOKEN: str = os.getenv("WHATSAPP_TOKEN", "")
