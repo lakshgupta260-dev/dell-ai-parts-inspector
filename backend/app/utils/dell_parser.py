@@ -23,8 +23,8 @@ _RE_SERVICE_TAG = re.compile(
     r"(?:service\s*tag|svc\s*tag|s/?n)[:\s#]*([A-Z0-9]{7})\b",
     re.IGNORECASE,
 )
-# Also catch bare 7-char tokens that look like a Service Tag
-_RE_SERVICE_TAG_BARE = re.compile(r"\b([A-Z][A-Z0-9]{6})\b")
+# Also catch bare 7-char tokens that look like a Service Tag (require both letters and digits)
+_RE_SERVICE_TAG_BARE = re.compile(r"\b(?=[A-Z0-9]*[A-Z])(?=[A-Z0-9]*[0-9])[A-Z0-9]{7}\b")
 
 # Express Service Code: exactly 11 consecutive digits
 _RE_ESC = re.compile(

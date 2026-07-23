@@ -257,12 +257,8 @@ def _rule_based_fallback(
         and not ocr.combined_dell_fields.express_service_code
         and not ocr.combined_dell_fields.model_name
     )
-    
-    text_lower = (ocr.front.full_text + " " + ocr.back.full_text).lower()
-    hardware_keywords = ["dell", "dp/n", "rev", "model", "made in", "fcc", "regulatory", "optiplex", "latitude", "xps", "alienware", "poweredge"]
-    has_hardware_keywords = any(kw in text_lower for kw in hardware_keywords)
 
-    if no_dell_identifiers or not has_hardware_keywords:
+    if no_dell_identifiers:
         verdict = "INVALID"
         score = 0
         confidence = "HIGH"
