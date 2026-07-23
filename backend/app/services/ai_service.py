@@ -184,7 +184,7 @@ def _run_gemini(
         ]
     }
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={settings.GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={settings.GEMINI_API_KEY}"
     payload = {
         "contents": [{"parts": parts}],
         "systemInstruction": {"parts": [{"text": SYSTEM_INSTRUCTION}]},
@@ -212,7 +212,7 @@ def _run_gemini(
         verdict=parsed["verdict"],
         confidence_level=parsed["confidence"],
         recommendations=parsed["recommendations"],
-        ai_model_used="gemini-2.0-flash",
+        ai_model_used="gemini-2.5-flash",
     )
 
 

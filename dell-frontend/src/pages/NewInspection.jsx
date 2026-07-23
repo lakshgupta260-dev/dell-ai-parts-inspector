@@ -8,7 +8,7 @@ const STAGES = [
   ["Vision", "OpenCV quality + label detection"],
   ["OCR", "PaddleOCR text extraction"],
   ["Comparison", "Dell field validation"],
-  ["AI Reasoning", "LangGraph + GPT-4.1 verdict"],
+  ["AI Reasoning", "LangGraph + Gemini 2.5 Flash verdict"],
   ["Report", "PDF generation"],
 ];
 
