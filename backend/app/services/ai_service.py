@@ -148,13 +148,12 @@ def _run_langgraph(
     def synthesize(state: InspectionState) -> InspectionState:
         reasoning = call_llm(
             f"Based on all inspection signals, provide a final authenticity verdict for this Dell hardware part.\n"
-            f"If the signals strongly suggest the image is completely irrelevant or not a hardware part at all (e.g. no text, no labels, completely irrelevant), use verdict 'INVALID'.\n"
             f"Visual: {state['visual_analysis']}\n"
             f"Text: {state['text_analysis']}\n"
             f"Discrepancies: {state['discrepancy_analysis']}\n"
             f"Comparison risk: {comparison.total_risk_score}/100\n\n"
             f"Respond ONLY in this exact JSON format (no markdown):\n"
-            f'{{"verdict": "AUTHENTIC|SUSPICIOUS|COUNTERFEIT|INVALID", '
+            f'{{"verdict": "AUTHENTIC|SUSPICIOUS|COUNTERFEIT", '
             f'"confidence": "HIGH|MEDIUM|LOW", '
             f'"fraud_score": <int 0-100>, '
             f'"reasoning": "<2-4 sentence final reasoning>", '
@@ -251,36 +250,8 @@ def _rule_based_fallback(
         noise = (int(hashlib.md5(inspection_id.encode()).hexdigest(), 16) % 7) - 3
         score = max(0, min(89, score + noise))
 
-    no_dell_identifiers = (
-        not ocr.combined_dell_fields.service_tag 
-        and not ocr.combined_dell_fields.part_number
-        and not ocr.combined_dell_fields.express_service_code
-        and not ocr.combined_dell_fields.model_name
-    )
-
-    text_lower = (ocr.front.full_text + " " + ocr.back.full_text).lower()
-    hardware_keywords = ["dell", "dp/n", "rev", "model", "made in", "regulatory", "fcc"]
-    has_hardware_keywords = any(kw in text_lower for kw in hardware_keywords)
-    
-    total_blocks = ocr.front.text_block_count + ocr.back.text_block_count
-    has_label_regions = (len(vision.front.label_regions) > 0) or (len(vision.back.label_regions) > 0)
-
-    is_invalid = False
-    if total_blocks == 0:
-        is_invalid = True
-    elif no_dell_identifiers and not has_hardware_keywords:
-        if not has_label_regions:
-            is_invalid = True
-        elif total_blocks > 20:
-            is_invalid = True
-
-    if is_invalid:
-        verdict = "INVALID"
-        score = 0
-        confidence = "HIGH"
-    else:
-        verdict = "AUTHENTIC" if score < 30 else "SUSPICIOUS" if score < 60 else "COUNTERFEIT"
-        confidence = "HIGH" if score < 20 or score > 70 else "MEDIUM"
+    verdict = "AUTHENTIC" if score < 30 else "SUSPICIOUS" if score < 60 else "COUNTERFEIT"
+    confidence = "HIGH" if score < 20 or score > 70 else "MEDIUM"
 
     visual_analysis = (
         f"Image quality {'acceptable' if vision.overall_quality_ok else 'poor — retake recommended'}. "
