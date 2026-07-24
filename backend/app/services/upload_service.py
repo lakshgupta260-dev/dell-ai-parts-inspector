@@ -90,22 +90,49 @@ async def save_inspection_images(
 
 async def _write_upload(upload: UploadFile, destination: Path) -> None:
     """
-    Stream an UploadFile to *destination* in chunks to avoid loading the
-    entire file into memory.
-
-    Args:
-        upload:      The FastAPI UploadFile to read from.
-        destination: Absolute path where the file will be written.
-
-    Raises:
-        HTTPException 500: If any I/O error occurs during writing.
+    Read the UploadFile, downscale it if it exceeds 1280px on the longest side
+    to save CPU/memory and API transfer time, and write it to the *destination*.
     """
     try:
-        with destination.open("wb") as out_file:
-            while chunk := await upload.read(_CHUNK_SIZE):
-                out_file.write(chunk)
-    except OSError as exc:
-        logger.exception("Failed to write file to %s", destination)
+        contents = await upload.read()
+        import cv2
+        import numpy as np
+
+        nparr = np.frombuffer(contents, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if img is not None:
+            h, w = img.shape[:2]
+            max_dim = 1280
+            if max(h, w) > max_dim:
+                if w > h:
+                    new_w = max_dim
+                    new_h = int(h * (max_dim / w))
+                else:
+                    new_h = max_dim
+                    new_w = int(w * (max_dim / h))
+                img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+                logger.info("Downscaled image '%s' from %dx%d to %dx%d", destination.name, w, h, new_w, new_h)
+
+            ext = destination.suffix.lower()
+            params = []
+            if ext in [".jpg", ".jpeg"]:
+                params = [int(cv2.IMWRITE_JPEG_QUALITY), 85]
+            elif ext == ".webp":
+                params = [int(cv2.IMWRITE_WEBP_QUALITY), 85]
+
+            success = cv2.imwrite(str(destination), img, params)
+            if not success:
+                logger.warning("cv2.imwrite failed, falling back to writing raw bytes for %s", destination.name)
+                with destination.open("wb") as out_file:
+                    out_file.write(contents)
+        else:
+            # Fallback if cv2 fails to decode
+            with destination.open("wb") as out_file:
+                out_file.write(contents)
+
+    except Exception as exc:
+        logger.exception("Failed to process and write file to %s", destination)
         from fastapi import HTTPException, status  # local import avoids circular deps
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

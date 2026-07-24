@@ -55,8 +55,18 @@ app.add_middleware(
 # ── Startup: initialise DB tables ─────────────────────────────────────────────
 @app.on_event("startup")
 def on_startup() -> None:
-    """Create all SQLAlchemy tables on server startup."""
+    """Create all SQLAlchemy tables and pre-warm PaddleOCR engine on server startup."""
     init_db()
+    
+    # Pre-warm PaddleOCR engine to avoid first-request loading delay
+    try:
+        logger.info("Pre-warming PaddleOCR engine...")
+        from app.services.ocr_service import _get_ocr_engine
+        _get_ocr_engine()
+        logger.info("PaddleOCR engine pre-warmed successfully.")
+    except Exception as e:
+        logger.error("Failed to pre-warm PaddleOCR engine during startup: %s", e)
+        
     logger.info("Dell PartVision AI API started successfully.")
 
 # ── Routers ───────────────────────────────────────────────────────────────────

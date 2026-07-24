@@ -56,7 +56,7 @@ def _get_ocr_engine():
         _ocr_engine = PaddleOCR(
             use_doc_orientation_classify=False,  # skip document-level orientation (hardware labels are usually upright)
             use_doc_unwarping=False,             # skip geometric unwarping
-            use_textline_orientation=True,       # auto-correct individual rotated text lines
+            use_textline_orientation=False,      # disable rotated line checking to improve performance
             lang="en",
             enable_mkldnn=False,                 # FIX: Disable OneDNN to prevent PIR attribute conversion crash on PaddlePaddle 3.x
         )
