@@ -25,6 +25,7 @@ from app.api import report as report_router
 from app.api import upload as upload_router
 from app.api import vision as vision_router
 from app.api import webhook as webhook_router
+from app.api import ar as ar_router
 from app.core.config import settings
 from app.core.database import init_db
 
@@ -81,6 +82,7 @@ app.include_router(notifications_router.router)
 app.include_router(history_router.router)
 app.include_router(pipeline_router.router)
 app.include_router(webhook_router.router)
+app.include_router(ar_router.router)
 
 # ── Meta Webhook Fallback ─────────────────────────────────────────────────────
 # Meta sometimes strips the path and hits /webhook directly. This catches it.

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { history, reportDownloadUrl, notify, apiError } from "../lib/api.js";
+import { QRCodeSVG } from "qrcode.react";
+import { history, reportDownloadUrl, notify, apiError, API_BASE } from "../lib/api.js";
 import { verdictTone, scoreTone, useTheme } from "../lib/auth.jsx";
 import { Panel, Eyebrow, Btn, ScoreDial, Tag, Loading, ErrorNote, Field } from "../components/ui.jsx";
 
@@ -80,7 +81,11 @@ export default function InspectionDetail() {
         <QualityCard label="Back image" blur={r.back_blur_score} />
       </div>
 
-      <div className="slide-up stagger-5">
+      <div className="slide-up stagger-5" style={{ marginBottom: 16 }}>
+        <ARViewerCard id={r.inspection_id} />
+      </div>
+
+      <div className="slide-up stagger-6">
         <NotifyCard id={r.inspection_id} />
       </div>
     </div>
@@ -138,6 +143,96 @@ function NotifyCard({ id }) {
       </div>
       {msg && <div style={{ fontFamily: T.sans, fontSize: 13, fontWeight: 500, color: msg.startsWith("✓") ? T.green : T.red, marginTop: 4 }}>{msg}</div>}
       <div style={{ fontFamily: T.sans, fontSize: 12, color: T.inkDim, marginTop: 8 }}>Sends this inspection's result via the backend's WhatsApp / Vapi services.</div>
+    </Panel>
+  );
+}
+
+function ARViewerCard({ id }) {
+  const { T } = useTheme();
+  const [modelUrl, setModelUrl] = useState(null);
+  const [polling, setPolling] = useState(false);
+  const [error, setError] = useState(null);
+
+  // On mount: check if model already exists, then start polling if not
+  useEffect(() => {
+    let cancelled = false;
+    let intervalId = null;
+
+    async function checkStatus() {
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/ar/status/${id}`);
+        const data = await resp.json();
+        if (!cancelled && data.exists) {
+          setModelUrl(data.model_url);
+          setPolling(false);
+          if (intervalId) clearInterval(intervalId);
+        } else if (!cancelled && !data.exists) {
+          setPolling(true);
+        }
+      } catch (e) {
+        console.error("Error checking AR status", e);
+      }
+    }
+
+    checkStatus(); // run immediately
+    // Poll every 5 seconds in case the pipeline is still generating it
+    intervalId = setInterval(() => {
+      if (!modelUrl) checkStatus();
+      else clearInterval(intervalId);
+    }, 5000);
+
+    return () => { cancelled = true; clearInterval(intervalId); };
+  }, [id]);
+
+  // Build the AR viewer URL. Phone can't access 'localhost', so we use the LAN IP.
+  const backendHost = window.location.hostname === 'localhost' ? '10.173.5.196' : window.location.hostname;
+  const frontendHost = window.location.hostname === 'localhost' ? '10.173.5.196' : window.location.hostname;
+  const backendUrl = `http://${backendHost}:8000`;
+  const arUrl = modelUrl
+    ? `http://${frontendHost}:${window.location.port || '5173'}/ar_viewer.html?model=${encodeURIComponent(backendUrl + modelUrl)}`
+    : null;
+
+  return (
+    <Panel>
+      <Eyebrow>3D AR View</Eyebrow>
+      <div style={{ display: "flex", gap: 24, alignItems: "center", marginTop: 16, flexWrap: "wrap" }}>
+        {modelUrl ? (
+          // ── Model ready: show QR code ──────────────────────────────────────
+          <>
+            <div style={{ background: "white", padding: 12, borderRadius: 8, border: `1px solid ${T.line}`, flexShrink: 0 }}>
+              <QRCodeSVG value={arUrl} size={130} />
+            </div>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ fontFamily: T.sans, fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 6 }}>
+                ✅ 3D Model Ready — View in AR!
+              </div>
+              <p style={{ fontFamily: T.sans, fontSize: 13, color: T.inkDim, lineHeight: 1.6, margin: 0 }}>
+                Scan this QR code with your smartphone camera to view a generated 3D representation of this part in Augmented Reality.
+              </p>
+            </div>
+          </>
+        ) : (
+          // ── Model not ready: show auto-generating status ───────────────────
+          <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              border: `3px solid ${T.dell}`,
+              borderTopColor: "transparent",
+              animation: "spin 1s linear infinite",
+              flexShrink: 0
+            }} />
+            <div>
+              <div style={{ fontFamily: T.sans, fontSize: 14, fontWeight: 600, color: T.ink, marginBottom: 4 }}>
+                Generating 3D Model…
+              </div>
+              <p style={{ fontFamily: T.sans, fontSize: 12, color: T.inkDim, lineHeight: 1.5, margin: 0 }}>
+                This happens automatically in the background. The QR code will appear here when ready (takes 20–60 s).
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </Panel>
   );
 }

@@ -7,11 +7,15 @@ Chains: Vision → OCR → Comparison → AI → PDF
 Saves every stage result and updates the inspection history DB record.
 """
 
+import asyncio
+import json
 import logging
+import os
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status, BackgroundTasks
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -30,6 +34,7 @@ from app.utils.results_store import (
     STAGE_AI, STAGE_COMPARISON, STAGE_OCR, STAGE_REPORT, STAGE_VISION,
     save_result,
 )
+from app.services.tripo3d_service import generate_3d_model
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from fastapi import Header
@@ -58,9 +63,6 @@ class PipelineResult(BaseModel):
     status: str = "pipeline_complete"
 
 
-import asyncio
-import json
-from fastapi.responses import StreamingResponse
 
 @router.post(
     "/run/{inspection_id}",
@@ -75,6 +77,7 @@ async def run_pipeline(
     inspection_id: str = Path(..., description="UUID from the Upload endpoint."),
     db: Session = Depends(get_db),
     authorization: str = Header(None),
+    background_tasks: BackgroundTasks = None,
 ):
     """Execute the full 5-stage inspection pipeline using SSE."""
     try:
@@ -226,5 +229,34 @@ async def run_pipeline(
             }
         }
         yield f"data: {json.dumps(final_payload)}\\n\\n"
+
+        # ── Stage 6: 3D AR Model (Background) ────────────────────────────────────
+        # Fire-and-forget: generate the 3D model in a background thread so it
+        # doesn't block the pipeline response. The frontend polls /ar/status.
+        async def _generate_ar_background():
+            try:
+                upload_base = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                    "uploads",
+                )
+                inspection_dir = os.path.join(upload_base, inspection_id)
+                front_img_path = None
+                for ext in ["jpeg", "jpg", "png"]:
+                    p = os.path.join(inspection_dir, f"front_image.{ext}")
+                    if os.path.exists(p):
+                        front_img_path = p
+                        break
+                if front_img_path:
+                    await asyncio.to_thread(generate_3d_model, inspection_id, front_img_path, inspection_dir)
+                    logger.info("[%s] Background 3D AR model generated.", inspection_id)
+                    yield f"data: {json.dumps({'stage': 'ar_3d', 'status': 'ready', 'model_url': f'/api/v1/ar/download/{inspection_id}'})}\\n\\n"
+                else:
+                    logger.warning("[%s] No front image found for AR generation.", inspection_id)
+            except Exception as e:
+                logger.error("[%s] Background AR generation failed: %s", inspection_id, e)
+                yield f"data: {json.dumps({'stage': 'ar_3d', 'status': f'error: {e}'})}\\n\\n"
+
+        async for chunk in _generate_ar_background():
+            yield chunk
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
