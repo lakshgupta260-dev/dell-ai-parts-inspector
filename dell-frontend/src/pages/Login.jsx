@@ -42,12 +42,8 @@ export default function Login() {
         
         {/* Left Side: Hero */}
         <div style={{ paddingRight: 40, animation: "slideUp 0.6s ease-out forwards" }}>
-          <div style={{ fontFamily: T.mono, fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: T.dell, display: "flex", gap: 16, alignItems: "center", marginBottom: 24 }}>
-            <span>• PLATFORM OPERATIONAL</span> <span>• AI EVALUATION ASSIST</span>
-          </div>
-          
           <h1 style={{ fontFamily: T.sans, fontSize: 62, fontWeight: 800, lineHeight: 1.1, letterSpacing: "-0.02em", color: T.ink, marginBottom: 24 }}>
-            Automate inspections.<br /><span style={{ color: T.dell }}>One platform, total trust.</span>
+            Automate inspections.<br /><span style={{ color: T.dell }}>One solution, total trust.</span>
           </h1>
           
           <div style={{ width: 40, height: 4, background: T.dell, marginBottom: 28 }} />
@@ -58,11 +54,11 @@ export default function Login() {
 
           <div style={{ display: "flex", gap: 60, marginTop: 48, borderTop: `1px solid ${T.line}`, paddingTop: 36 }}>
             <div>
-              <div style={{ fontFamily: T.sans, fontSize: 28, fontWeight: 800, color: T.ink }}>100%</div>
-              <div style={{ fontFamily: T.sans, fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", color: T.inkDim, marginTop: 4 }}>COVERAGE</div>
+              <div style={{ fontFamily: T.sans, fontSize: 28, fontWeight: 800, color: T.ink }}>90%</div>
+              <div style={{ fontFamily: T.sans, fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", color: T.inkDim, marginTop: 4 }}>TIME SAVED</div>
             </div>
             <div>
-              <div style={{ fontFamily: T.sans, fontSize: 28, fontWeight: 800, color: T.ink }}>&lt;2s</div>
+              <div style={{ fontFamily: T.sans, fontSize: 28, fontWeight: 800, color: T.ink }}>60s</div>
               <div style={{ fontFamily: T.sans, fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", color: T.inkDim, marginTop: 4 }}>EVALUATION TIME</div>
             </div>
           </div>

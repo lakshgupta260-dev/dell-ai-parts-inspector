@@ -121,13 +121,13 @@ def _build_pdf(
     f = ocr.combined_dell_fields
     fields_data = [
         ["Field", "Extracted Value", "Status"],
-        ["Service Tag", f.service_tag or "❌ NOT FOUND", "✅" if f.service_tag else "❌"],
-        ["Express Service Code", f.express_service_code or "❌ NOT FOUND", "✅" if f.express_service_code else "❌"],
-        ["Part Number", f.part_number or "❌ NOT FOUND", "✅" if f.part_number else "❌"],
-        ["Model Name", f.model_name or "❌ NOT FOUND", "✅" if f.model_name else "❌"],
-        ["Country of Origin", f.country_of_origin or "N/A", "ℹ️"],
-        ["Manufacture Date", f.manufacture_date or "N/A", "ℹ️"],
-        ["Regulatory", ", ".join(f.regulatory_info) or "None found", "ℹ️"],
+        ["Service Tag", f.service_tag or "[NOT FOUND]", "[OK]" if f.service_tag else "[FAIL]"],
+        ["Express Service Code", f.express_service_code or "[NOT FOUND]", "[OK]" if f.express_service_code else "[FAIL]"],
+        ["Part Number", f.part_number or "[NOT FOUND]", "[OK]" if f.part_number else "[FAIL]"],
+        ["Model Name", f.model_name or "[NOT FOUND]", "[OK]" if f.model_name else "[FAIL]"],
+        ["Country of Origin", f.country_of_origin or "N/A", "[INFO]"],
+        ["Manufacture Date", f.manufacture_date or "N/A", "[INFO]"],
+        ["Regulatory", ", ".join(f.regulatory_info) or "None found", "[INFO]"],
     ]
     ft = Table(fields_data, colWidths=[5*cm, 9*cm, 3*cm])
     ft.setStyle(TableStyle([
@@ -162,7 +162,7 @@ def _build_pdf(
     story.append(Paragraph("Comparison Engine Results", heading2))
     story.append(Paragraph(comparison.comparison_summary, body))
     for chk in comparison.field_checks:
-        icon = "✅" if chk.is_present and chk.is_valid_format else "⚠️" if chk.is_present else "❌"
+        icon = "[OK]" if chk.is_present and chk.is_valid_format else "[WARN]" if chk.is_present else "[FAIL]"
         story.append(Paragraph(
             f"{icon} <b>{chk.field_name}</b>: {chk.extracted_value or 'N/A'} — risk +{chk.risk_contribution}",
             body
